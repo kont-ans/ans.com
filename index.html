@@ -1,0 +1,4214 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام إدارة ANS.COM المتكامل</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ========== الأنماط الأساسية ========== */
+        :root {
+            --primary: #6a11cb;
+            --secondary: #2575fc;
+            --success: #38ef7d;
+            --danger: #ff416c;
+            --warning: #ffa502;
+            --dark: #2c3e50;
+            --light: #f8f9fa;
+            --gray: #6c757d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Tahoma', 'Geneva', 'Verdana', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            min-height: 100vh;
+            padding: 20px;
+            direction: rtl;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* ========== نظام الصفحات ========== */
+        .page {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .page.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: calc(100vh - 40px);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ========== التصميم المشترك ========== */
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        .logo {
+            color: white;
+            font-size: 2.8rem;
+            margin-bottom: 30px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .logo i {
+            font-size: 2.5rem;
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 50%;
+            backdrop-filter: blur(10px);
+        }
+
+        .box {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            padding: 50px 40px;
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(to left, var(--primary), var(--secondary));
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .header h1 {
+            color: var(--dark);
+            font-size: 2.2rem;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: var(--gray);
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            color: var(--dark);
+            font-weight: 600;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-with-icon {
+            position: relative;
+        }
+
+        .input-with-icon i {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary);
+            font-size: 1.2rem;
+            z-index: 1;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 16px 55px 16px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 1.05rem;
+            background: var(--light);
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 5px 15px rgba(106, 17, 203, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .show-password {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--gray);
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 5px;
+            transition: color 0.3s;
+        }
+
+        .show-password:hover {
+            color: var(--primary);
+        }
+
+        /* ========== الأزرار ========== */
+        .btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            margin-top: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: 0.5s;
+        }
+
+        .btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(106, 17, 203, 0.3);
+        }
+
+        .btn:hover::before {
+            right: 100%;
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-success {
+            background: linear-gradient(to right, #38ef7d, #11998e);
+        }
+
+        .btn-danger {
+            background: linear-gradient(to right, #ff416c, #ff4b2b);
+        }
+
+        .btn-warning {
+            background: linear-gradient(to right, #ffa502, #ff7b00);
+        }
+
+        .btn-dark {
+            background: linear-gradient(to right, #2c3e50, #34495e);
+        }
+
+        .btn-light {
+            background: linear-gradient(to right, #8e9eab, #eef2f3);
+            color: var(--dark);
+        }
+
+        .btn-sm {
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 8px;
+            width: auto;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        /* ========== الرسائل ========== */
+        .message {
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            text-align: center;
+            font-weight: 600;
+            display: none;
+            animation: slideIn 0.3s ease;
+            border-right: 5px solid;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .message.success {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            color: #155724;
+            border-right-color: #28a745;
+        }
+
+        .message.error {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            color: #721c24;
+            border-right-color: #dc3545;
+        }
+
+        .message.info {
+            background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+            color: #0c5460;
+            border-right-color: #17a2b8;
+        }
+
+        .message.warning {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            color: #856404;
+            border-right-color: #ffc107;
+        }
+
+        /* ========== الروابط ========== */
+        .links {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 1px solid #eee;
+            color: var(--gray);
+            font-size: 1rem;
+        }
+
+        .links a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            margin: 0 8px;
+            padding: 5px 10px;
+            border-radius: 6px;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .links a::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            right: 10px;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: width 0.3s;
+        }
+
+        .links a:hover {
+            background: rgba(106, 17, 203, 0.1);
+        }
+
+        .links a:hover::after {
+            width: calc(100% - 20px);
+        }
+
+        /* ========== خطوات التقدم ========== */
+        .steps {
+            display: flex;
+            justify-content: space-between;
+            margin: 40px 0;
+            position: relative;
+        }
+
+        .steps::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            right: 0;
+            left: 0;
+            height: 3px;
+            background: #e0e0e0;
+            z-index: 1;
+        }
+
+        .step {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            flex: 1;
+        }
+
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            color: var(--gray);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            transition: all 0.3s;
+            border: 3px solid white;
+        }
+
+        .step.active .step-circle {
+            background: var(--primary);
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(106, 17, 203, 0.3);
+        }
+
+        .step-label {
+            font-size: 0.9rem;
+            color: var(--gray);
+            font-weight: 500;
+        }
+
+        .step.active .step-label {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        /* ========== الداشبورد ========== */
+        .dashboard-container {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .dashboard-header {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            box-shadow: 0 8px 25px rgba(106, 17, 203, 0.3);
+        }
+
+        .user-details h2 {
+            color: var(--dark);
+            margin-bottom: 5px;
+            font-size: 1.8rem;
+        }
+
+        .user-details p {
+            color: var(--gray);
+            font-size: 1.1rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        /* ========== بطاقات الإحصائيات ========== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border-top: 5px solid;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+
+        .stat-card.users { border-top-color: var(--primary); }
+        .stat-card.active { border-top-color: var(--success); }
+        .stat-card.banned { border-top-color: var(--danger); }
+        .stat-card.s { border-top-color: var(--warning); }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: var(--gray);
+        }
+
+        .stat-number {
+            font-size: 2.8rem;
+            font-weight: 800;
+            margin: 10px 0;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-label {
+            color: var(--gray);
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        /* ========== الجداول ========== */
+        .table-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow-x: auto;
+            margin-bottom: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        thead {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        th {
+            padding: 18px 15px;
+            text-align: right;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #eee;
+            transition: all 0.3s;
+        }
+
+        tbody tr:hover {
+            background: rgba(106, 17, 203, 0.05);
+            transform: scale(1.005);
+        }
+
+        td {
+            padding: 15px;
+            color: var(--dark);
+            font-weight: 500;
+        }
+
+        /* ========== الباجات ========== */
+        .badge {
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            display: inline-block;
+        }
+
+        .badge-success {
+            background: rgba(56, 239, 125, 0.2);
+            color: #11998e;
+        }
+
+        .badge-danger {
+            background: rgba(255, 65, 108, 0.2);
+            color: #ff416c;
+        }
+
+        .badge-warning {
+            background: rgba(255, 165, 2, 0.2);
+            color: #ffa502;
+        }
+
+        .badge-primary {
+            background: rgba(106, 17, 203, 0.2);
+            color: var(--primary);
+        }
+
+        /* ========== التبويبات ========== */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 15px 30px;
+            background: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            color: var(--gray);
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .tab:hover {
+            transform: translateY(-3px);
+            color: var(--primary);
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            box-shadow: 0 8px 25px rgba(106, 17, 203, 0.3);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* ========== الإعدادات ========== */
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .setting-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .setting-card h3 {
+            color: var(--dark);
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .setting-item {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .setting-item label {
+            color: var(--dark);
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            right: 0;
+            left: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            right: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(-26px);
+        }
+
+        /* ========== OTP المدخلات ========== */
+        .otp-container {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        .otp-input {
+            width: 60px;
+            height: 70px;
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 800;
+            border: 3px solid #e0e0e0;
+            border-radius: 12px;
+            background: var(--light);
+            transition: all 0.3s;
+        }
+
+        .otp-input:focus {
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 5px 15px rgba(106, 17, 203, 0.2);
+            transform: translateY(-3px);
+        }
+
+        .timer {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            text-align: center;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* ========== معايير كلمة المرور ========== */
+        .password-criteria {
+            background: var(--light);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+
+        .criterion {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            color: var(--gray);
+            font-size: 0.95rem;
+        }
+
+        .criterion i {
+            font-size: 1rem;
+        }
+
+        .criterion.valid {
+            color: var(--success);
+        }
+
+        .criterion.invalid {
+            color: var(--danger);
+        }
+
+        /* ========== نصائح الأمان ========== */
+        .security-tips {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            border: 2px solid #ffc107;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+
+        .security-tips h4 {
+            color: #856404;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.3rem;
+        }
+
+        .security-tips ul {
+            list-style: none;
+            padding-right: 20px;
+        }
+
+        .security-tips li {
+            margin-bottom: 12px;
+            padding-right: 10px;
+            position: relative;
+            color: #856404;
+            font-weight: 500;
+        }
+
+        .security-tips li::before {
+            content: '•';
+            color: #ffc107;
+            font-size: 1.5rem;
+            position: absolute;
+            right: -20px;
+            top: -3px;
+        }
+
+        /* ========== تذييل الصفحة ========== */
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            color: white;
+            padding: 20px;
+            font-size: 1rem;
+            opacity: 0.8;
+        }
+
+        .footer a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* ========== التجاوب ========== */
+        @media (max-width: 768px) {
+            .logo {
+                font-size: 2rem;
+                margin-bottom: 20px;
+            }
+            
+            .box {
+                padding: 30px 20px;
+                margin: 0 10px;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .btn {
+                padding: 15px;
+                font-size: 1.1rem;
+            }
+            
+            .dashboard-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .user-info {
+                flex-direction: column;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .otp-input {
+                width: 45px;
+                height: 55px;
+                font-size: 1.5rem;
+            }
+            
+            .tab {
+                padding: 12px 20px;
+                font-size: 0.9rem;
+            }
+            
+            .table-container {
+                padding: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .logo {
+                font-size: 1.8rem;
+            }
+            
+            .logo i {
+                padding: 10px;
+                font-size: 1.8rem;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .form-control {
+                padding: 14px 45px 14px 15px;
+                font-size: 1rem;
+            }
+            
+            .btn {
+                padding: 14px;
+                font-size: 1rem;
+            }
+            
+            .otp-input {
+                width: 40px;
+                height: 50px;
+                font-size: 1.3rem;
+            }
+            
+            .timer {
+                font-size: 2rem;
+            }
+        }
+
+        /* ========== تحميل الرسوم المتحركة ========== */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ========== تأثيرات خاصة ========== */
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .shake {
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        /* ========== الظلال ========== */
+        .shadow-sm { box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .shadow-md { box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
+        .shadow-lg { box-shadow: 0 15px 35px rgba(0,0,0,0.2); }
+        .shadow-xl { box-shadow: 0 25px 50px rgba(0,0,0,0.25); }
+
+        /* ========== الهامش والحشو ========== */
+        .my-20 { margin: 20px 0; }
+        .my-30 { margin: 30px 0; }
+        .my-40 { margin: 40px 0; }
+        .py-20 { padding: 20px 0; }
+        .py-30 { padding: 30px 0; }
+        .py-40 { padding: 40px 0; }
+
+        /* ========== المرونة ========== */
+        .d-flex { display: flex; }
+        .flex-column { flex-direction: column; }
+        .align-center { align-items: center; }
+        .justify-center { justify-content: center; }
+        .justify-between { justify-content: space-between; }
+        .flex-wrap { flex-wrap: wrap; }
+        .gap-10 { gap: 10px; }
+        .gap-15 { gap: 15px; }
+        .gap-20 { gap: 20px; }
+
+        /* ========== النصوص ========== */
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .text-left { text-align: left; }
+        .text-primary { color: var(--primary); }
+        .text-success { color: var(--success); }
+        .text-danger { color: var(--danger); }
+        .text-warning { color: var(--warning); }
+        .text-dark { color: var(--dark); }
+        .text-gray { color: var(--gray); }
+        .text-light { color: white; }
+        .fw-bold { font-weight: 700; }
+        .fw-semibold { font-weight: 600; }
+        .fs-sm { font-size: 0.9rem; }
+        .fs-md { font-size: 1rem; }
+        .fs-lg { font-size: 1.2rem; }
+        .fs-xl { font-size: 1.5rem; }
+        .fs-xxl { font-size: 2rem; }
+
+        /* ========== الخلفيات ========== */
+        .bg-white { background: white; }
+        .bg-light { background: var(--light); }
+        .bg-primary { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; }
+        .bg-success { background: linear-gradient(135deg, var(--success), #11998e); color: white; }
+        .bg-danger { background: linear-gradient(135deg, var(--danger), #ff4b2b); color: white; }
+        .bg-warning { background: linear-gradient(135deg, var(--warning), #ff7b00); color: white; }
+
+        /* ========== الحدود ========== */
+        .rounded { border-radius: 10px; }
+        .rounded-lg { border-radius: 15px; }
+        .rounded-xl { border-radius: 20px; }
+        .border { border: 1px solid #e0e0e0; }
+        .border-top { border-top: 1px solid #e0e0e0; }
+        .border-bottom { border-bottom: 1px solid #e0e0e0; }
+
+        /* ========== العرض ========== */
+        .w-100 { width: 100%; }
+        .w-auto { width: auto; }
+        .mw-500 { max-width: 500px; }
+        .mw-800 { max-width: 800px; }
+        .mw-1200 { max-width: 1200px; }
+
+        /* ========== الإخفاء ========== */
+        .d-none { display: none; }
+        .d-block { display: block; }
+        .d-inline-block { display: inline-block; }
+        .invisible { visibility: hidden; }
+        .opacity-0 { opacity: 0; }
+        .opacity-50 { opacity: 0.5; }
+        .opacity-100 { opacity: 1; }
+
+        /* ========== الموضع ========== */
+        .position-relative { position: relative; }
+        .position-absolute { position: absolute; }
+        .position-fixed { position: fixed; }
+        .top-0 { top: 0; }
+        .right-0 { right: 0; }
+        .bottom-0 { bottom: 0; }
+        .left-0 { left: 0; }
+
+        /* ========== z-index ========== */
+        .z-1 { z-index: 1; }
+        .z-2 { z-index: 2; }
+        .z-3 { z-index: 3; }
+        .z-999 { z-index: 999; }
+        .z-9999 { z-index: 9999; }
+
+        /* ========== الفواصل ========== */
+        .divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, #e0e0e0, transparent);
+            margin: 30px 0;
+        }
+
+        /* ========== الإشعارات ========== */
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            z-index: 9999;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* ========== المودال ========== */
+        .modal {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: scaleIn 0.3s ease;
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        /* ========== البطاقات ========== */
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+
+        .card-header {
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .card-body {
+            padding: 0;
+        }
+
+        .card-footer {
+            padding-top: 20px;
+            margin-top: 20px;
+            border-top: 2px solid #eee;
+        }
+
+        /* ========== القوائم ========== */
+        .list-group {
+            list-style: none;
+            padding: 0;
+        }
+
+        .list-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .list-item:hover {
+            background: rgba(106, 17, 203, 0.05);
+        }
+
+        .list-item:last-child {
+            border-bottom: none;
+        }
+
+        /* ========== النماذج المتقدمة ========== */
+        .form-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-col {
+            flex: 1;
+        }
+
+        .form-check {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .form-check input {
+            width: 20px;
+            height: 20px;
+        }
+
+        .form-check label {
+            margin: 0;
+        }
+
+        /* ========== الأيقونات ========== */
+        .icon-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+        }
+
+        .icon-square {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: white;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+        }
+
+        /* ========== التقدم ========== */
+        .progress {
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 5px;
+            transition: width 0.3s ease;
+        }
+
+        /* ========== العلامات ========== */
+        .tag {
+            display: inline-block;
+            padding: 5px 12px;
+            background: rgba(106, 17, 203, 0.1);
+            color: var(--primary);
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin: 0 5px;
+        }
+
+        .tag-success { background: rgba(56, 239, 125, 0.2); color: #11998e; }
+        .tag-danger { background: rgba(255, 65, 108, 0.2); color: #ff416c; }
+        .tag-warning { background: rgba(255, 165, 2, 0.2); color: #ffa502; }
+
+        /* ========== الصور ========== */
+        .img-fluid {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .img-thumbnail {
+            padding: 5px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+        }
+
+        /* ========== التنبيهات ========== */
+        .alert {
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border-right: 5px solid;
+        }
+
+        .alert-primary {
+            background: rgba(106, 17, 203, 0.1);
+            color: var(--primary);
+            border-right-color: var(--primary);
+        }
+
+        .alert-success {
+            background: rgba(56, 239, 125, 0.1);
+            color: #11998e;
+            border-right-color: #11998e;
+        }
+
+        .alert-danger {
+            background: rgba(255, 65, 108, 0.1);
+            color: #ff416c;
+            border-right-color: #ff416c;
+        }
+
+        .alert-warning {
+            background: rgba(255, 165, 2, 0.1);
+            color: #ffa502;
+            border-right-color: #ffa502;
+        }
+
+        /* ========== المدخلات الخاصة ========== */
+        .input-group {
+            display: flex;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid #e0e0e0;
+        }
+
+        .input-group .form-control {
+            border: none;
+            border-radius: 0;
+            flex: 1;
+        }
+
+        .input-group .btn {
+            border-radius: 0;
+            margin: 0;
+            width: auto;
+            padding: 0 25px;
+        }
+
+        /* ========== الأكواد ========== */
+        code {
+            background: rgba(106, 17, 203, 0.1);
+            color: var(--primary);
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        pre {
+            background: var(--dark);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        /* ========== الشريط الجانبي ========== */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 300px;
+            height: 100vh;
+            background: white;
+            box-shadow: -5px 0 25px rgba(0,0,0,0.1);
+            transition: right 0.3s ease;
+            z-index: 9998;
+            padding: 20px;
+        }
+
+        .sidebar.active {
+            right: 0;
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 9997;
+            display: none;
+        }
+
+        .sidebar-overlay.active {
+            display: block;
+        }
+
+        /* ========== البانر ========== */
+        .banner {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .banner h1 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .banner p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        /* ========== الشبكة ========== */
+        .grid {
+            display: grid;
+            gap: 30px;
+        }
+
+        .grid-2 { grid-template-columns: repeat(2, 1fr); }
+        .grid-3 { grid-template-columns: repeat(3, 1fr); }
+        .grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+        /* ========== الحاوية السائلة ========== */
+        .container-fluid {
+            width: 100%;
+            padding: 0 20px;
+        }
+
+        /* ========== المرئيات ========== */
+        .visible { visibility: visible; }
+        .invisible { visibility: hidden; }
+
+        /* ========== المؤشرات ========== */
+        .cursor-pointer { cursor: pointer; }
+        .cursor-default { cursor: default; }
+        .cursor-not-allowed { cursor: not-allowed; }
+
+        /* ========== الإطارات ========== */
+        .frame {
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 20px;
+            background: white;
+        }
+
+        /* ========== التأثيرات ========== */
+        .hover-lift:hover { transform: translateY(-5px); }
+        .hover-grow:hover { transform: scale(1.05); }
+        .hover-shadow:hover { box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
+
+        /* ========== الرسوم البيانية ========== */
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        /* ========== التاريخ والوقت ========== */
+        .datetime {
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* ========== الأقسام ========== */
+        .section {
+            padding: 60px 0;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .section-title h2 {
+            font-size: 2.2rem;
+            color: var(--dark);
+            margin-bottom: 15px;
+        }
+
+        .section-title p {
+            color: var(--gray);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* ========== الهامش المخصص ========== */
+        .m-0 { margin: 0; }
+        .m-10 { margin: 10px; }
+        .m-20 { margin: 20px; }
+        .mt-0 { margin-top: 0; }
+        .mt-10 { margin-top: 10px; }
+        .mt-20 { margin-top: 20px; }
+        .mt-30 { margin-top: 30px; }
+        .mt-40 { margin-top: 40px; }
+        .mb-0 { margin-bottom: 0; }
+        .mb-10 { margin-bottom: 10px; }
+        .mb-20 { margin-bottom: 20px; }
+        .mb-30 { margin-bottom: 30px; }
+        .mb-40 { margin-bottom: 40px; }
+        .mr-0 { margin-right: 0; }
+        .mr-10 { margin-right: 10px; }
+        .mr-20 { margin-right: 20px; }
+        .ml-0 { margin-left: 0; }
+        .ml-10 { margin-left: 10px; }
+        .ml-20 { margin-left: 20px; }
+
+        /* ========== الحشو المخصص ========== */
+        .p-0 { padding: 0; }
+        .p-10 { padding: 10px; }
+        .p-20 { padding: 20px; }
+        .pt-0 { padding-top: 0; }
+        .pt-10 { padding-top: 10px; }
+        .pt-20 { padding-top: 20px; }
+        .pt-30 { padding-top: 30px; }
+        .pt-40 { padding-top: 40px; }
+        .pb-0 { padding-bottom: 0; }
+        .pb-10 { padding-bottom: 10px; }
+        .pb-20 { padding-bottom: 20px; }
+        .pb-30 { padding-bottom: 30px; }
+        .pb-40 { padding-bottom: 40px; }
+        .pr-0 { padding-right: 0; }
+        .pr-10 { padding-right: 10px; }
+        .pr-20 { padding-right: 20px; }
+        .pl-0 { padding-left: 0; }
+        .pl-10 { padding-left: 10px; }
+        .pl-20 { padding-left: 20px; }
+
+        /* ========== الحجم ========== */
+        .h-100 { height: 100%; }
+        .h-50 { height: 50%; }
+        .h-auto { height: auto; }
+        .min-h-100 { min-height: 100vh; }
+        .min-h-50 { min-height: 50vh; }
+
+        /* ========== التمرير ========== */
+        .overflow-auto { overflow: auto; }
+        .overflow-hidden { overflow: hidden; }
+        .overflow-scroll { overflow: scroll; }
+        .overflow-x-auto { overflow-x: auto; }
+        .overflow-y-auto { overflow-y: auto; }
+
+        /* ========== الحدود المخصصة ========== */
+        .border-0 { border: none; }
+        .border-1 { border: 1px solid #e0e0e0; }
+        .border-2 { border: 2px solid #e0e0e0; }
+        .border-3 { border: 3px solid #e0e0e0; }
+        .border-primary { border-color: var(--primary); }
+        .border-success { border-color: var(--success); }
+        .border-danger { border-color: var(--danger); }
+        .border-warning { border-color: var(--warning); }
+
+        /* ========== الظلال المخصصة ========== */
+        .shadow-none { box-shadow: none; }
+        .shadow-primary { box-shadow: 0 5px 15px rgba(106, 17, 203, 0.2); }
+        .shadow-success { box-shadow: 0 5px 15px rgba(56, 239, 125, 0.2); }
+        .shadow-danger { box-shadow: 0 5px 15px rgba(255, 65, 108, 0.2); }
+
+        /* ========== الشفافية ========== */
+        .opacity-0 { opacity: 0; }
+        .opacity-25 { opacity: 0.25; }
+        .opacity-50 { opacity: 0.5; }
+        .opacity-75 { opacity: 0.75; }
+        .opacity-100 { opacity: 1; }
+
+        /* ========== التحولات ========== */
+        .transform-none { transform: none; }
+        .transform-rotate-90 { transform: rotate(90deg); }
+        .transform-rotate-180 { transform: rotate(180deg); }
+        .transform-scale-1 { transform: scale(1); }
+        .transform-scale-1-1 { transform: scale(1.1); }
+        .transform-scale-0-9 { transform: scale(0.9); }
+
+        /* ========== الفلاتر ========== */
+        .filter-blur { filter: blur(5px); }
+        .filter-grayscale { filter: grayscale(100%); }
+        .filter-sepia { filter: sepia(100%); }
+
+        /* ========== الخلفيات المتدرجة ========== */
+        .gradient-primary { background: linear-gradient(135deg, var(--primary), var(--secondary)); }
+        .gradient-success { background: linear-gradient(135deg, var(--success), #11998e); }
+        .gradient-danger { background: linear-gradient(135deg, var(--danger), #ff4b2b); }
+        .gradient-warning { background: linear-gradient(135deg, var(--warning), #ff7b00); }
+
+        /* ========== النصوص المتدرجة ========== */
+        .text-gradient {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* ========== الخطوط ========== */
+        .font-primary { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .font-mono { font-family: 'Courier New', monospace; }
+        .font-serif { font-family: Georgia, 'Times New Roman', Times, serif; }
+
+        /* ========== الحروف ========== */
+        .letter-spacing-1 { letter-spacing: 1px; }
+        .letter-spacing-2 { letter-spacing: 2px; }
+        .word-spacing-1 { word-spacing: 5px; }
+        .word-spacing-2 { word-spacing: 10px; }
+
+        /* ========== السطور ========== */
+        .line-height-1 { line-height: 1; }
+        .line-height-1-5 { line-height: 1.5; }
+        .line-height-2 { line-height: 2; }
+
+        /* ========== الفضاءات ========== */
+        .space-10 { margin: 10px 0; }
+        .space-20 { margin: 20px 0; }
+        .space-30 { margin: 30px 0; }
+        .space-40 { margin: 40px 0; }
+
+        /* ========== الأبعاد ========== */
+        .dim-100 { width: 100px; height: 100px; }
+        .dim-200 { width: 200px; height: 200px; }
+        .dim-300 { width: 300px; height: 300px; }
+
+        /* ========== المحاذاة ========== */
+        .align-top { vertical-align: top; }
+        .align-middle { vertical-align: middle; }
+        .align-bottom { vertical-align: bottom; }
+
+        /* ========== الفراغات ========== */
+        .spacer { flex: 1; }
+        .spacer-10 { width: 10px; height: 10px; }
+        .spacer-20 { width: 20px; height: 20px; }
+        .spacer-30 { width: 30px; height: 30px; }
+
+        /* ========== التدوير ========== */
+        .rotate-45 { transform: rotate(45deg); }
+        .rotate-90 { transform: rotate(90deg); }
+        .rotate-180 { transform: rotate(180deg); }
+
+        /* ========== الانعكاس ========== */
+        .flip-horizontal { transform: scaleX(-1); }
+        .flip-vertical { transform: scaleY(-1); }
+
+        /* ========== التمويه ========== */
+        .blur-1 { filter: blur(1px); }
+        .blur-2 { filter: blur(2px); }
+        .blur-3 { filter: blur(3px); }
+
+        /* ========== الوضوح ========== */
+        .brightness-50 { filter: brightness(0.5); }
+        .brightness-100 { filter: brightness(1); }
+        .brightness-150 { filter: brightness(1.5); }
+
+        /* ========== التباين ========== */
+        .contrast-50 { filter: contrast(0.5); }
+        .contrast-100 { filter: contrast(1); }
+        .contrast-150 { filter: contrast(1.5); }
+
+        /* ========== التشبع ========== */
+        .saturate-50 { filter: saturate(0.5); }
+        .saturate-100 { filter: saturate(1); }
+        .saturate-150 { filter: saturate(1.5); }
+
+        /* ========== الإضاءة ========== */
+        .hue-rotate-90 { filter: hue-rotate(90deg); }
+        .hue-rotate-180 { filter: hue-rotate(180deg); }
+        .hue-rotate-270 { filter: hue-rotate(270deg); }
+
+        /* ========== التقريب ========== */
+        .rounded-top { border-radius: 10px 10px 0 0; }
+        .rounded-bottom { border-radius: 0 0 10px 10px; }
+        .rounded-right { border-radius: 0 10px 10px 0; }
+        .rounded-left { border-radius: 10px 0 0 10px; }
+
+        /* ========== الزوايا ========== */
+        .rounded-0 { border-radius: 0; }
+        .rounded-5 { border-radius: 5px; }
+        .rounded-10 { border-radius: 10px; }
+        .rounded-15 { border-radius: 15px; }
+        .rounded-20 { border-radius: 20px; }
+
+        /* ========== الحدود المزدوجة ========== */
+        .border-double { border-style: double; }
+        .border-dashed { border-style: dashed; }
+        .border-dotted { border-style: dotted; }
+
+        /* ========== أنماط القوائم ========== */
+        .list-none { list-style: none; }
+        .list-disc { list-style: disc; }
+        .list-decimal { list-style: decimal; }
+        .list-circle { list-style: circle; }
+        .list-square { list-style: square; }
+
+        /* ========== موضع القوائم ========== */
+        .list-inside { list-style-position: inside; }
+        .list-outside { list-style-position: outside; }
+
+        /* ========== الجداول ========== */
+        .table-striped tbody tr:nth-child(odd) { background: rgba(0,0,0,0.02); }
+        .table-bordered { border: 1px solid #e0e0e0; }
+        .table-bordered th,
+        .table-bordered td { border: 1px solid #e0e0e0; }
+        .table-hover tbody tr:hover { background: rgba(106, 17, 203, 0.05); }
+
+        /* ========== الصور الخلفية ========== */
+        .bg-cover { background-size: cover; }
+        .bg-contain { background-size: contain; }
+        .bg-center { background-position: center; }
+        .bg-top { background-position: top; }
+        .bg-bottom { background-position: bottom; }
+        .bg-left { background-position: left; }
+        .bg-right { background-position: right; }
+
+        /* ========== التكرار ========== */
+        .bg-repeat { background-repeat: repeat; }
+        .bg-no-repeat { background-repeat: no-repeat; }
+        .bg-repeat-x { background-repeat: repeat-x; }
+        .bg-repeat-y { background-repeat: repeat-y; }
+
+        /* ========== التعلق ========== */
+        .bg-fixed { background-attachment: fixed; }
+        .bg-scroll { background-attachment: scroll; }
+        .bg-local { background-attachment: local; }
+
+        /* ========== المزج ========== */
+        .blend-normal { mix-blend-mode: normal; }
+        .blend-multiply { mix-blend-mode: multiply; }
+        .blend-screen { mix-blend-mode: screen; }
+        .blend-overlay { mix-blend-mode: overlay; }
+
+        /* ========== الطباعة ========== */
+        @media print {
+            .no-print { display: none; }
+            .print-only { display: block; }
+            body { background: white; }
+            .box { box-shadow: none; border: 1px solid #000; }
+        }
+    </style>
+</head>
+<body>
+    <!-- صفحة تسجيل الدخول الرئيسية -->
+    <div id="loginPage" class="page active">
+        <div class="container mw-500">
+            <div class="logo">
+                <i class="fas fa-user-shield"></i>
+                <span>نظام إدارة ANS.COM المتكامل</span>
+            </div>
+            
+            <div class="box">
+                <div class="header">
+                    <h1>مرحباً بعودتك!</h1>
+                    <p>سجل الدخول للوصول إلى نظام الإدارة المتكامل</p>
+                </div>
+                
+                <div id="loginMessage" class="message"></div>
+                
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="loginUsername">
+                            <i class="fas fa-user"></i>
+                            اسم المستخدم أو البريد الإلكتروني
+                        </label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-user"></i>
+                            <input type="text" id="loginUsername" class="form-control" 
+                                   placeholder="أدخل اسم المستخدم أو البريد الإلكتروني" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="loginPassword">
+                            <i class="fas fa-lock"></i>
+                            كلمة المرور
+                        </label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="loginPassword" class="form-control" 
+                                   placeholder="أدخل كلمة المرور" required>
+                            <button type="button" class="show-password" onclick="togglePassword('loginPassword', this)">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-between align-center my-20">
+                        <div class="form-check">
+                            <input type="checkbox" id="rememberMe">
+                            <label for="rememberMe" class="cursor-pointer">تذكرني</label>
+                        </div>
+                        <a href="javascript:void(0)" onclick="showPage('forgotPage')" class="text-primary fw-semibold">
+                            <i class="fas fa-key"></i> نسيت كلمة المرور؟
+                        </a>
+                    </div>
+                    
+                    <button type="submit" class="btn">
+                        <i class="fas fa-sign-in-alt"></i>
+                        تسجيل الدخول
+                    </button>
+                </form>
+                
+                <div class="links my-30">
+                    <p class="text-gray">ليس لديك حساب؟ 
+                        <a href="javascript:void(0)" onclick="showPage('registerPage')" class="fw-bold">
+                            <i class="fas fa-user-plus"></i> إنشاء حساب جديد
+                        </a>
+                    </p>
+                </div>
+                
+                <div class="divider"></div>
+                
+                <div class="text-center">
+                    <p class="text-gray mb-10">أو قم بالدخول كـ</p>
+                    <button class="btn btn-light" onclick="showPage('LoginPage')">
+                        <i class="fas fa-user-shield"></i>
+                        مشرف النظام
+                    </button>
+                </div>
+            </div>
+            
+            <div class="footer">
+                <p>© 2024 نظام إدارة ANS.COM المتكامل. جميع الحقوق محفوظة.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- صفحة تسجيل الدخول للمشرفين -->
+    <div id="LoginPage" class="page">
+        <div class="container mw-500">
+            <div class="logo">
+                <i class="fas fa-user-shield"></i>
+                <span>لوحة تحكم المشرفين</span>
+            </div>
+            
+            <div class="box">
+                <div class="header">
+                    <div class="badge badge-warning mb-10">
+                        <i class="fas fa-shield-alt"></i> منطقة آمنة
+                    </div>
+                    <h1>دخول المشرفين</h1>
+                    <p>الدخول مخصص للمشرفين المعتمدين فقط</p>
+                </div>
+                
+                <div id="Message" class="message"></div>
+                
+                <form id="LoginForm">
+                    <div class="form-group">
+                        <label for="Username">
+                            <i class="fas fa-user-cog"></i>
+                            اسم المستخدم
+                        </label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-user-cog"></i>
+                            <input type="text" id="Username" class="form-control" 
+                                   placeholder="اسم مستخدم المشرف" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="Password">
+                            <i class="fas fa-key"></i>
+                            كلمة المرور
+                        </label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-key"></i>
+                            <input type="password" id="Password" class="form-control" 
+                                   placeholder="كلمة مرور المشرف" required>
+                            <button type="button" class="show-password" onclick="togglePassword('Password', this)">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="Code">
+                            <i class="fas fa-fingerprint"></i>
+                            كود الأمان
+                        </label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-fingerprint"></i>
+                            <input type="text" id="Code" class="form-control" 
+                                   placeholder="الكود السري للمشرف" required>
+                        </div>
+                        <small class="text-gray fs-sm">كود الأمان الخاص بالمشرفين</small>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-sign-in-alt"></i>
+                        دخول المشرف
+                    </button>
+                    
+                    <button type="button" class="btn btn-light mt-10" onclick="showPage('loginPage')">
+                        <i class="fas fa-arrow-right"></i>
+                        العودة لتسجيل الدخول العادي
+                    </button>
+                </form>
+                
+                <div class="security-tips mt-30">
+                    <h4>
+                        <i class="fas fa-exclamation-triangle"></i>
+                        نصائح أمنية للمشرفين
+                    </h4>
+                    <ul>
+                        <li>لا تشارك كود الأمان مع أي شخص</li>
+                        <li>استخدم كلمة مرور قوية ومتغيرة</li>
+                        <li>سجل الخروج بعد كل استخدام</li>
+                        <li>راقب سجلات النظام بانتظام</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- صفحة إنشاء حساب جديد -->
+    <div id="registerPage" class="page">
+        <div class="container mw-500">
+            <div class="logo">
+                <i class="fas fa-user-plus"></i>
+                <span>إنشاء حساب جديد</span>
+            </div>
+            
+            <div class="box">
+                <div class="steps mb-40">
+                    <div class="step active" id="step1">
+                        <div class="step-circle">1</div>
+                        <div class="step-label">البيانات الأساسية</div>
+                    </div>
+                    <div class="step" id="step2">
+                        <div class="step-circle">2</div>
+                        <div class="step-label">كلمة المرور</div>
+                    </div>
+                    <div class="step" id="step3">
+                        <div class="step-circle">3</div>
+                        <div class="step-label">الموافقة</div>
+                    </div>
+                </div>
+                
+                <div class="header">
+                    <h1>انضم إلى مجتمعنا</h1>
+                    <p>أنشئ حسابك واستمتع بجميع المميزات</p>
+                </div>
+                
+                <div id="registerMessage" class="message"></div>
+                
+                <form id="registerForm">
+                    <!-- الخطوة 1: البيانات الأساسية -->
+                    <div id="registerStep1" class="form-step">
+                        <div class="form-group">
+                            <label for="fullName">
+                                <i class="fas fa-user"></i>
+                                الاسم الكامل
+                            </label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-user"></i>
+                                <input type="text" id="fullName" class="form-control" 
+                                       placeholder="أدخل اسمك الكامل" required>
+                            </div>
+                            <small class="text-gray fs-sm">سيظهر هذا الاسم في ملفك الشخصي</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="regUsername">
+                                <i class="fas fa-at"></i>
+                                اسم المستخدم
+                            </label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-at"></i>
+                                <input type="text" id="regUsername" class="form-control" 
+                                       placeholder="اختر اسم مستخدم فريد" required>
+                            </div>
+                            <small class="text-gray fs-sm">
+                                <span id="usernameStatus"></span>
+                            </small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="regEmail">
+                                <i class="fas fa-envelope"></i>
+                                البريد الإلكتروني
+                            </label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-envelope"></i>
+                                <input type="email" id="regEmail" class="form-control" 
+                                       placeholder="example@email.com" required>
+                            </div>
+                            <small class="text-gray fs-sm">
+                                <span id="emailStatus"></span>
+                            </small>
+                        </div>
+                        
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-light" onclick="showPage('loginPage')">
+                                <i class="fas fa-arrow-right"></i> إلغاء
+                            </button>
+                            <button type="button" class="btn" onclick="nextRegisterStep(2)">
+                                <i class="fas fa-arrow-left"></i> التالي
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- الخطوة 2: كلمة المرور -->
+                    <div id="registerStep2" class="form-step" style="display: none;">
+                        <div class="form-group">
+                            <label for="regPassword">
+                                <i class="fas fa-lock"></i>
+                                كلمة المرور
+                            </label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-lock"></i>
+                                <input type="password" id="regPassword" class="form-control" 
+                                       placeholder="كلمة المرور (8 أحرف على الأقل)" required>
+                                <button type="button" class="show-password" onclick="togglePassword('regPassword', this)">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <div class="password-criteria">
+                                <div class="criterion" id="criterionLength">
+                                    <i class="fas fa-circle"></i>
+                                    <span>8 أحرف على الأقل</span>
+                                </div>
+                                <div class="criterion" id="criterionUppercase">
+                                    <i class="fas fa-circle"></i>
+                                    <span>حرف كبير واحد على الأقل</span>
+                                </div>
+                                <div class="criterion" id="criterionNumber">
+                                    <i class="fas fa-circle"></i>
+                                    <span>رقم واحد على الأقل</span>
+                                </div>
+                                <div class="criterion" id="criterionSpecial">
+                                    <i class="fas fa-circle"></i>
+                                    <span>رمز خاص واحد على الأقل</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="regConfirmPassword">
+                                <i class="fas fa-lock"></i>
+                                تأكيد كلمة المرور
+                            </label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-lock"></i>
+                                <input type="password" id="regConfirmPassword" class="form-control" 
+                                       placeholder="أعد إدخال كلمة المرور" required>
+                                <button type="button" class="show-password" onclick="togglePassword('regConfirmPassword', this)">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <small class="text-gray fs-sm">
+                                <span id="passwordMatchStatus"></span>
+                            </small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="telegramId">
+                                <i class="fab fa-telegram"></i>
+                                معرف تيليجرام (اختياري)
+                            </label>
+                            <div class="input-with-icon">
+                                <i class="fab fa-telegram"></i>
+                                <input type="text" id="telegramId" class="form-control" 
+                                       placeholder="@username أو رقم الهاتف">
+                            </div>
+                            <small class="text-gray fs-sm">لإرسال إشعارات مهمة عبر تيليجرام</small>
+                        </div>
+                        
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-light" onclick="prevRegisterStep(1)">
+                                <i class="fas fa-arrow-right"></i> السابق
+                            </button>
+                            <button type="button" class="btn" onclick="nextRegisterStep(3)">
+                                <i class="fas fa-arrow-left"></i> التالي
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- الخطوة 3: الموافقة -->
+                    <div id="registerStep3" class="form-step" style="display: none;">
+                        <div class="card mb-20">
+                            <div class="card-header">
+                                <h3 class="text-dark">
+                                    <i class="fas fa-file-contract"></i>
+                                    شروط الاستخدام وسياسة الخصوصية
+                                </h3>
+                            </div>
+                            <div class="card-body">
+                                <div style="max-height: 200px; overflow-y: auto; padding: 10px;">
+                                    <p class="text-gray mb-10">1. أنت مسؤول عن الحفاظ على سرية حسابك وكلمة المرور.</p>
+                                    <p class="text-gray mb-10">2. لا يجوز استخدام المنصة لأي أغراض غير قانونية أو غير أخلاقية.</p>
+                                    <p class="text-gray mb-10">3. نحتفظ بالحق في تعليق أو حذف أي حساب ينتهك الشروط.</p>
+                                    <p class="text-gray mb-10">4. سيتم التعامل مع بياناتك الشخصية بسرية ولن يتم مشاركتها مع أطراف ثالثة.</p>
+                                    <p class="text-gray mb-10">5. قد نرسل لك إشعارات مهمة عبر البريد الإلكتروني أو تيليجرام.</p>
+                                    <p class="text-gray mb-10">6. يحق لنا تحديث شروط الاستخدام في أي وقت.</p>
+                                    <p class="text-gray">7. باستخدامك للمنصة، فإنك توافق على جميع الشروط والأحكام.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-check mb-20">
+                            <input type="checkbox" id="agreeTerms" required>
+                            <label for="agreeTerms" class="text-dark">
+                                أوافق على <a href="#" class="text-primary">شروط الاستخدام</a> 
+                                و <a href="#" class="text-primary">سياسة الخصوصية</a>
+                            </label>
+                        </div>
+                        
+                        <div class="form-check mb-30">
+                            <input type="checkbox" id="newsletter">
+                            <label for="newsletter" class="text-dark">
+                                أرغب في تلقي النشرة الإخبارية والعروض الخاصة
+                            </label>
+                        </div>
+                        
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-light" onclick="prevRegisterStep(2)">
+                                <i class="fas fa-arrow-right"></i> السابق
+                            </button>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-check"></i>
+                                إنشاء الحساب
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- الخطوة 4: النجاح -->
+                    <div id="registerStep4" class="form-step" style="display: none; text-align: center;">
+                        <div class="icon-circle" style="margin: 0 auto 20px; background: linear-gradient(135deg, #38ef7d, #11998e);">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        
+                        <h2 class="text-success mb-10">تم إنشاء حسابك بنجاح! 🎉</h2>
+                        <p class="text-gray mb-20">
+                            مرحباً بك في مجتمعنا! لقد تم إرسال رسالة تأكيد إلى بريدك الإلكتروني.
+                        </p>
+                        
+                        <div class="card mb-20">
+                            <div class="card-body text-right">
+                                <p class="text-dark fw-bold mb-10">تفاصيل حسابك:</p>
+                                <p class="text-gray mb-5">
+                                    <strong>اسم المستخدم:</strong> <span id="registeredUsername"></span>
+                                </p>
+                                <p class="text-gray mb-5">
+                                    <strong>البريد الإلكتروني:</strong> <span id="registeredEmail"></span>
+                                </p>
+                                <p class="text-gray">
+                                    <strong>تاريخ التسجيل:</strong> <span id="registrationDate"></span>
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <button type="button" class="btn" onclick="showPage('loginPage')">
+                            <i class="fas fa-sign-in-alt"></i>
+                            تسجيل الدخول الآن
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- صفحة استعادة كلمة المرور -->
+    <div id="forgotPage" class="page">
+        <div class="container mw-500">
+            <div class="logo">
+                <i class="fas fa-key"></i>
+                <span>استعادة كلمة المرور</span>
+            </div>
+            
+            <div class="box">
+                <div class="steps mb-40">
+                    <div class="step active" id="forgotStep1">
+                        <div class="step-circle">1</div>
+                        <div class="step-label">البريد الإلكتروني</div>
+                    </div>
+                    <div class="step" id="forgotStep2">
+                        <div class="step-circle">2</div>
+                        <div class="step-label">رمز التحقق</div>
+                    </div>
+                    <div class="step" id="forgotStep3">
+                        <div class="step-circle">3</div>
+                        <div class="step-label">كلمة مرور جديدة</div>
+                    </div>
+                </div>
+                
+                <div class="header">
+                    <h1>نسيت كلمة المرور؟</h1>
+                    <p>اتبع الخطوات لإعادة تعيين كلمة المرور الخاصة بك</p>
+                </div>
+                
+                <div id="forgotMessage" class="message"></div>
+                
+                <!-- الخطوة 1: البريد الإلكتروني -->
+                <div id="forgotStep1Content" class="form-step">
+                    <form id="forgotEmailForm">
+                        <div class="form-group">
+                            <label for="forgotEmail">
+                                <i class="fas fa-envelope"></i>
+                                البريد الإلكتروني
+                            </label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-envelope"></i>
+                                <input type="email" id="forgotEmail" class="form-control" 
+                                       placeholder="أدخل بريدك الإلكتروني المسجل" required>
+                            </div>
+                            <small class="text-gray fs-sm">سنرسل رمز تحقق مكون من 6 أرقام إلى هذا البريد</small>
+                        </div>
+                        
+                        <button type="submit" class="btn">
+                            <i class="fas fa-paper-plane"></i>
+                            إرسال رمز التحقق
+                        </button>
+                    </form>
+                    
+                    <div class="links mt-30">
+                        <p class="text-gray">
+                            تذكرت كلمة المرور؟ 
+                            <a href="javascript:void(0)" onclick="showPage('loginPage')" class="fw-bold">
+                                <i class="fas fa-sign-in-alt"></i> سجل الدخول
+                            </a>
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- الخطوة 2: رمز التحقق -->
+                <div id="forgotStep2Content" class="form-step" style="display: none;">
+                    <div class="text-center mb-20">
+                        <p class="text-gray mb-5">تم إرسال رمز التحقق إلى:</p>
+                        <p class="text-primary fw-bold" id="sentEmail"></p>
+                        <p class="text-gray fs-sm">أدخل الرمز المكون من 6 أرقام</p>
+                    </div>
+                    
+                    <form id="otpForm">
+                        <div class="otp-container" id="otpContainer"></div>
+                        
+                        <div class="timer" id="resendTimer">02:00</div>
+                        
+                        <div class="text-center">
+                            <a href="javascript:void(0)" onclick="resendOTP()" id="resendLink" class="text-primary fw-semibold">
+                                <i class="fas fa-redo"></i> إعادة إرسال الرمز
+                            </a>
+                        </div>
+                        
+                        <div class="btn-group mt-20">
+                            <button type="button" class="btn btn-light" onclick="prevForgotStep(1)">
+                                <i class="fas fa-arrow-right"></i> السابق
+                            </button>
+                            <button type="submit" class="btn">
+                                <i class="fas fa-check"></i>
+                                تحقق
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- الخطوة 3: كلمة مرور جديدة -->
+                <div id="forgotStep3Content" class="form-step" style="display: none;">
+                    <form id="forgotPasswordForm">
+                        <div class="form-group">
+                            <label for="newPassword">
+                                <i class="fas fa-lock"></i>
+                                كلمة المرور الجديدة
+                            </label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-lock"></i>
+                                <input type="password" id="newPassword" class="form-control" 
+                                       placeholder="كلمة المرور الجديدة" required>
+                                <button type="button" class="show-password" onclick="togglePassword('newPassword', this)">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="password-criteria">
+                            <div class="criterion" id="forgotCriterionLength">
+                                <i class="fas fa-circle"></i>
+                                <span>8 أحرف على الأقل</span>
+                            </div>
+                            <div class="criterion" id="forgotCriterionUppercase">
+                                <i class="fas fa-circle"></i>
+                                <span>حرف كبير واحد على الأقل</span>
+                            </div>
+                            <div class="criterion" id="forgotCriterionNumber">
+                                <i class="fas fa-circle"></i>
+                                <span>رقم واحد على الأقل</span>
+                            </div>
+                            <div class="criterion" id="forgotCriterionSpecial">
+                                <i class="fas fa-circle"></i>
+                                <span>رمز خاص واحد على الأقل</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="confirmNewPassword">
+                                <i class="fas fa-lock"></i>
+                                تأكيد كلمة المرور الجديدة
+                            </label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-lock"></i>
+                                <input type="password" id="confirmNewPassword" class="form-control" 
+                                       placeholder="أعد إدخال كلمة المرور الجديدة" required>
+                                <button type="button" class="show-password" onclick="togglePassword('confirmNewPassword', this)">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <small class="text-gray fs-sm">
+                                <span id="forgotPasswordMatchStatus"></span>
+                            </small>
+                        </div>
+                        
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-light" onclick="prevForgotStep(2)">
+                                <i class="fas fa-arrow-right"></i> السابق
+                            </button>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i>
+                                حفظ كلمة المرور
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- الخطوة 4: النجاح -->
+                <div id="forgotStep4Content" class="form-step" style="display: none; text-align: center;">
+                    <div class="icon-circle" style="margin: 0 auto 20px; background: linear-gradient(135deg, #38ef7d, #11998e);">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    
+                    <h2 class="text-success mb-10">تم تغيير كلمة المرور بنجاح! ✅</h2>
+                    <p class="text-gray mb-30">
+                        تم تحديث كلمة المرور الخاصة بحسابك بنجاح.
+                    </p>
+                    
+                    <button type="button" class="btn" onclick="showPage('loginPage')">
+                        <i class="fas fa-sign-in-alt"></i>
+                        تسجيل الدخول الآن
+                    </button>
+                </div>
+                
+                <div class="security-tips mt-30">
+                    <h4>
+                        <i class="fas fa-shield-alt"></i>
+                        نصائح أمنية
+                    </h4>
+                    <ul>
+                        <li>لا تشارك كلمة المرور الخاصة بك مع أي شخص</li>
+                        <li>استخدم كلمة مرور قوية وفريدة لكل حساب</li>
+                        <li>غير كلمة المرور بانتظام كل 3-6 أشهر</li>
+                        <li>تفعيل المصادقة الثنائية إذا كانت متاحة</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- لوحة تحكم المستخدم -->
+    <div id="userDashboardPage" class="page">
+        <div class="dashboard-container">
+            <div class="dashboard-header">
+                <div class="user-info">
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="user-details">
+                        <h2 id="userName">المستخدم</h2>
+                        <p id="userEmail" class="text-gray"></p>
+                    </div>
+                </div>
+                
+                <div class="header-actions">
+                    <button class="btn btn-sm btn-light" onclick="showPage('loginPage')">
+                        <i class="fas fa-home"></i> الرئيسية
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
+                    </button>
+                </div>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card users">
+                    <div class="stat-icon">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <div class="stat-number" id="userStatsTotal">0</div>
+                    <div class="stat-label">إجمالي المستخدمين</div>
+                </div>
+                
+                <div class="stat-card active">
+                    <div class="stat-icon">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                    <div class="stat-number" id="userStatsActive">0</div>
+                    <div class="stat-label">مستخدمين نشطين</div>
+                </div>
+            </div>
+            
+            <div class="table-container">
+                <h3 class="text-dark mb-20">
+                    <i class="fas fa-users"></i>
+                    المستخدمين في النظام
+                </h3>
+                
+                <table id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>الاسم</th>
+                            <th>البريد الإلكتروني</th>
+                            <th>الدور</th>
+                            <th>الحالة</th>
+                            <th>تاريخ التسجيل</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <!-- سيتم تعبئتها بالبيانات -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="text-center mt-30">
+                <button class="btn btn-light" onclick="showPage('loginPage')">
+                    <i class="fas fa-arrow-right"></i>
+                    العودة للصفحة الرئيسية
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- لوحة تحكم المشرفين -->
+    <div id="DashboardPage" class="page">
+        <div class="dashboard-container">
+            <div class="dashboard-header">
+                <div class="user-info">
+                    <div class="user-avatar" style="background: linear-gradient(135deg, #ff416c, #ff4b2b);">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <div class="user-details">
+                        <h2 id="Name">المشرف</h2>
+                        <p id="Email" class="text-gray"></p>
+                        <p id="currentTime" class="datetime"></p>
+                    </div>
+                </div>
+                
+                <div class="header-actions">
+                    <button class="btn btn-sm btn-light" onclick="showPage('loginPage')">
+                        <i class="fas fa-home"></i> الرئيسية
+                    </button>
+                    <button class="btn btn-sm btn-warning" onclick="showAdminSettings()">
+                        <i class="fas fa-cog"></i> الإعدادات
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
+                    </button>
+                </div>
+            </div>
+            
+            <div class="tabs mb-30">
+                <button class="tab active" onclick="switchAdminTab('dashboard')">
+                    <i class="fas fa-tachometer-alt"></i> الإحصائيات
+                </button>
+                <button class="tab" onclick="switchAdminTab('users')">
+                    <i class="fas fa-users-cog"></i> إدارة المستخدمين
+                </button>
+                <button class="tab" onclick="switchAdminTab('telegram')">
+                    <i class="fab fa-telegram"></i> بوت تيليجرام
+                </button>
+                <button class="tab" onclick="switchAdminTab('logs')">
+                    <i class="fas fa-history"></i> سجلات النظام
+                </button>
+                <button class="tab" onclick="switchAdminTab('settings')">
+                    <i class="fas fa-sliders-h"></i> الإعدادات
+                </button>
+            </div>
+            
+            <!-- تبويب الإحصائيات -->
+            <div id="DashboardTab" class="tab-content active">
+                <div class="stats-grid mb-30">
+                    <div class="stat-card users">
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-number" id="StatsTotal">0</div>
+                        <div class="stat-label">إجمالي المستخدمين</div>
+                    </div>
+                    
+                    <div class="stat-card active">
+                        <div class="stat-icon">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                        <div class="stat-number" id="StatsActive">0</div>
+                        <div class="stat-label">مستخدمين نشطين</div>
+                    </div>
+                    
+                    <div class="stat-card banned">
+                        <div class="stat-icon">
+                            <i class="fas fa-user-slash"></i>
+                        </div>
+                        <div class="stat-number" id="StatsBanned">0</div>
+                        <div class="stat-label">محظور</div>
+                    </div>
+                    
+                    <div class="stat-card s">
+                        <div class="stat-icon">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                        <div class="stat-number" id="StatsAdmins">0</div>
+                        <div class="stat-label">مشرف</div>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <div class="d-flex justify-between align-center mb-20">
+                        <h3 class="text-dark m-0">
+                            <i class="fas fa-chart-line"></i>
+                            نشاط النظام
+                        </h3>
+                        <button class="btn btn-sm" onclick="refreshStats()">
+                            <i class="fas fa-sync-alt"></i> تحديث
+                        </button>
+                    </div>
+                    
+                    <div id="systemActivity" class="text-center py-40">
+                        <p class="text-gray">يتم تحميل نشاط النظام...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- تبويب إدارة المستخدمين -->
+            <div id="UsersTab" class="tab-content">
+                <div class="table-container">
+                    <div class="d-flex justify-between align-center mb-20">
+                        <h3 class="text-dark m-0">
+                            <i class="fas fa-users-cog"></i>
+                            إدارة المستخدمين
+                        </h3>
+                        <div class="d-flex gap-10">
+                            <input type="text" id="searchUsers" class="form-control" 
+                                   placeholder="🔍 بحث عن مستخدم..." style="width: 250px;">
+                            <button class="btn btn-sm btn-success" onclick="openAddUserModal()">
+                                <i class="fas fa-user-plus"></i> إضافة مستخدم
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <table id="UsersTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>الاسم الكامل</th>
+                                <th>اسم المستخدم</th>
+                                <th>البريد الإلكتروني</th>
+                                <th>الدور</th>
+                                <th>الحالة</th>
+                                <th>تاريخ التسجيل</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="UsersTableBody">
+                            <!-- سيتم تعبئتها بالبيانات -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- تبويب تيليجرام -->
+            <div id="TelegramTab" class="tab-content">
+                <div class="card mb-20">
+                    <div class="card-header">
+                        <h3 class="text-dark">
+                            <i class="fab fa-telegram"></i>
+                            إدارة بوت تيليجرام
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>توكن البوت</label>
+                                    <input type="password" id="botToken" class="form-control" 
+                                           placeholder="أدخل توكن البوت">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>معرف قناة الدعم</label>
+                                    <input type="text" id="supportChannel" class="form-control" 
+                                           placeholder="@SupportChannel">
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn btn-success" onclick="saveTelegramSettings()">
+                            <i class="fas fa-save"></i> حفظ الإعدادات
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="grid grid-2 gap-20">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="text-dark">
+                                <i class="fas fa-ban"></i>
+                                حظر مستخدم
+                            </h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label>معرف المستخدم</label>
+                                <input type="text" id="banUserId" class="form-control" 
+                                       placeholder="123456789">
+                            </div>
+                            <div class="form-group">
+                                <label>سبب الحظر</label>
+                                <input type="text" id="banReason" class="form-control" 
+                                       placeholder="سبب الحظر">
+                            </div>
+                            <button class="btn btn-danger" onclick="banUserViaTelegram()">
+                                <i class="fas fa-ban"></i> حظر المستخدم
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="text-dark">
+                                <i class="fas fa-bullhorn"></i>
+                                إرسال إشعار
+                            </h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label>الرسالة</label>
+                                <textarea id="telegramMessage" class="form-control" 
+                                          rows="4" placeholder="اكتب الرسالة..."></textarea>
+                            </div>
+                            <button class="btn btn-primary" onclick="sendTelegramNotification()">
+                                <i class="fas fa-paper-plane"></i> إرسال للجميع
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- تبويب السجلات -->
+            <div id="LogsTab" class="tab-content">
+                <div class="table-container">
+                    <div class="d-flex justify-between align-center mb-20">
+                        <h3 class="text-dark m-0">
+                            <i class="fas fa-history"></i>
+                            سجلات النظام
+                        </h3>
+                        <div class="d-flex gap-10">
+                            <button class="btn btn-sm btn-light" onclick="exportLogs()">
+                                <i class="fas fa-download"></i> تصدير
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="clearLogs()">
+                                <i class="fas fa-trash"></i> مسح السجلات
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="logs-container" id="logsContainer" 
+                         style="background: #1a1a1a; color: #00ff00; padding: 20px; border-radius: 10px; height: 400px; overflow-y: auto; font-family: 'Courier New';">
+                        <!-- سيتم تعبئتها بالسجلات -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- تبويب الإعدادات -->
+            <div id="SettingsTab" class="tab-content">
+                <div class="settings-grid">
+                    <div class="setting-card">
+                        <h3><i class="fas fa-key"></i> إعدادات الأمان</h3>
+                        <div class="setting-item">
+                            <label>كود الأمان الحالي</label>
+                            <input type="text" id="securityCode" class="form-control" 
+                                   value="HUSSAIN_ADMIN_2024" readonly>
+                        </div>
+                        <div class="setting-item">
+                            <label>تغيير كود الأمان</label>
+                            <button class="btn btn-sm btn-warning" onclick="changeSecurityCode()">
+                                <i class="fas fa-sync-alt"></i> تغيير
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-card">
+                        <h3><i class="fas fa-bell"></i> إعدادات الإشعارات</h3>
+                        <div class="setting-item">
+                            <label>إشعار عند تسجيل جديد</label>
+                            <label class="switch">
+                                <input type="checkbox" id="notifyNewUsers" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <label>إشعار عند دخول المشرفين</label>
+                            <label class="switch">
+                                <input type="checkbox" id="notifyAdminLogins" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <label>إشعار عند حظر مستخدم</label>
+                            <label class="switch">
+                                <input type="checkbox" id="notifyBans">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <button class="btn btn-sm btn-success mt-10" onclick="saveNotificationSettings()">
+                            <i class="fas fa-save"></i> حفظ
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة إضافة مستخدم -->
+    <div id="addUserModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h2 class="text-dark mb-20">
+                <i class="fas fa-user-plus"></i>
+                إضافة مستخدم جديد
+            </h2>
+            
+            <form id="addUserForm">
+                <div class="form-group">
+                    <label>الاسم الكامل</label>
+                    <input type="text" id="newUserFullname" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>اسم المستخدم</label>
+                    <input type="text" id="newUserUsername" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>البريد الإلكتروني</label>
+                    <input type="email" id="newUserEmail" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>كلمة المرور</label>
+                    <input type="password" id="newUserPassword" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>الدور</label>
+                    <select id="newUserRole" class="form-control">
+                        <option value="user">مستخدم عادي</option>
+                        <option value="">مشرف</option>
+                    </select>
+                </div>
+                
+                <div class="btn-group mt-30">
+                    <button type="button" class="btn btn-light" onclick="closeModal()">
+                        <i class="fas fa-times"></i> إلغاء
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> حفظ
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- إشعار تيليجرام -->
+    <div id="telegramNotification" class="notification" style="display: none;">
+        <div class="message success">
+            <i class="fab fa-telegram"></i>
+            <span id="notificationMessage"></span>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // المتغيرات العامة والتهيئة
+        // ============================================
+        const SYSTEM_NAME = "نظام إدارة ANS.COM المتكامل";
+        const VERSION = "1.0.0";
+        const ADMIN_SECURITY_CODE = "HUSSAIN_ADMIN_2024";
+        
+        // بيانات النظام
+        let users = JSON.parse(localStorage.getItem('users')) || [
+            {
+                id: 1,
+                fullname: "المشرف الرئيسي",
+                username: "",
+                email: "@example.com",
+                password: "123",
+                role: "",
+                status: "active",
+                telegram_id: null,
+                created_at: new Date().toISOString(),
+                last_login: null,
+                last_password_change: new Date().toISOString()
+            },
+            {
+                id: 2,
+                fullname: "مستخدم تجريبي",
+                username: "user",
+                email: "user@example.com",
+                password: "user123",
+                role: "user",
+                status: "active",
+                telegram_id: null,
+                created_at: new Date().toISOString(),
+                last_login: null,
+                last_password_change: new Date().toISOString()
+            }
+        ];
+        
+        let currentUser = null;
+        let systemLogs = JSON.parse(localStorage.getItem('systemLogs')) || [];
+        let notificationSettings = JSON.parse(localStorage.getItem('notificationSettings')) || {
+            notifyNewUsers: true,
+            notifyAdminLogins: true,
+            notifyBans: false
+        };
+        
+        let telegramSettings = JSON.parse(localStorage.getItem('telegramSettings')) || {
+            botToken: "",
+            supportChannel: "@HussainSupport"
+        };
+        
+        // متغيرات الاستعادة
+        let recoveryData = {
+            email: "",
+            userId: null,
+            otp: "",
+            otpExpires: null
+        };
+        
+        // ============================================
+        // دوال النظام الأساسية
+        // ============================================
+        
+        function initializeSystem() {
+            console.log(`${SYSTEM_NAME} v${VERSION} - بدء التشغيل`);
+            
+            // حفظ البيانات الأولية
+            saveDataToStorage();
+            
+            // التحقق من المستخدم الحالي
+            const savedUser = sessionStorage.getItem('currentUser') || localStorage.getItem('currentUser');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                if (currentUser.role === '') {
+                    showPage('DashboardPage');
+                    updateAdminDashboard();
+                } else {
+                    showPage('userDashboardPage');
+                    updateUserDashboard();
+                }
+            } else {
+                showPage('loginPage');
+            }
+            
+            // تحديث الوقت
+            updateCurrentTime();
+            setInterval(updateCurrentTime, 1000);
+            
+            // إضافة سجل تشغيل
+            addSystemLog('تهيئة النظام', 'info');
+        }
+        
+        function saveDataToStorage() {
+            localStorage.setItem('users', JSON.stringify(users));
+            localStorage.setItem('systemLogs', JSON.stringify(systemLogs));
+            localStorage.setItem('notificationSettings', JSON.stringify(notificationSettings));
+            localStorage.setItem('telegramSettings', JSON.stringify(telegramSettings));
+        }
+        
+        function addSystemLog(action, type = 'info') {
+            const log = {
+                timestamp: new Date().toISOString(),
+                action: action,
+                type: type,
+                user: currentUser ? currentUser.username : 'System',
+                ip: '127.0.0.1'
+            };
+            
+            systemLogs.unshift(log);
+            
+            // حفظ فقط آخر 1000 سجل
+            if (systemLogs.length > 1000) {
+                systemLogs = systemLogs.slice(0, 1000);
+            }
+            
+            localStorage.setItem('systemLogs', JSON.stringify(systemLogs));
+            
+            // تحديث عرض السجلات إذا كانت الصفحة مفتوحة
+            if (document.getElementById('LogsTab').classList.contains('active')) {
+                displayLogs();
+            }
+        }
+        
+        function showMessage(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+            
+            element.textContent = message;
+            element.className = `message ${type}`;
+            element.style.display = 'block';
+            
+            // إخفاء الرسالة بعد 5 ثواني
+            setTimeout(() => {
+                element.style.display = 'none';
+            }, 5000);
+        }
+        
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('telegramNotification');
+            const messageElement = document.getElementById('notificationMessage');
+            
+            if (!notification || !messageElement) return;
+            
+            messageElement.innerHTML = `<i class="fab fa-telegram"></i> ${message}`;
+            notification.querySelector('.message').className = `message ${type}`;
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 5000);
+        }
+        
+        function showPage(pageId) {
+            // إخفاء جميع الصفحات
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // إظهار الصفحة المطلوبة
+            const page = document.getElementById(pageId);
+            if (page) {
+                page.classList.add('active');
+                
+                // تهيئة خاصة لكل صفحة
+                switch(pageId) {
+                    case 'DashboardPage':
+                        updateAdminDashboard();
+                        break;
+                    case 'userDashboardPage':
+                        updateUserDashboard();
+                        break;
+                    case 'loginPage':
+                        resetLoginForm();
+                        break;
+                    case 'registerPage':
+                        resetRegisterForm();
+                        break;
+                    case 'forgotPage':
+                        resetForgotForm();
+                        break;
+                }
+            }
+        }
+        
+        function togglePassword(inputId, button) {
+            const input = document.getElementById(inputId);
+            const icon = button.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+                button.setAttribute('title', 'إخفاء كلمة المرور');
+            } else {
+                input.type = 'password';
+                icon.className = 'fas fa-eye';
+                button.setAttribute('title', 'إظهار كلمة المرور');
+            }
+        }
+        
+        function updateCurrentTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('ar-EG');
+            const dateString = now.toLocaleDateString('ar-EG', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            
+            const timeElement = document.getElementById('currentTime');
+            if (timeElement) {
+                timeElement.textContent = `${dateString} - ${timeString}`;
+            }
+        }
+        
+        function logout() {
+            if (currentUser) {
+                addSystemLog(`تسجيل خروج المستخدم: ${currentUser.username}`, 'info');
+            }
+            
+            currentUser = null;
+            sessionStorage.removeItem('currentUser');
+            localStorage.removeItem('currentUser');
+            
+            showPage('loginPage');
+            showNotification('تم تسجيل الخروج بنجاح', 'success');
+        }
+        
+        // ============================================
+        // نظام المصادقة
+        // ============================================
+        
+        function loginUser(username, password, rememberMe = false) {
+            // البحث عن المستخدم
+            const user = users.find(u => 
+                (u.username === username || u.email === username) && 
+                u.password === password && 
+                u.status !== 'banned'
+            );
+            
+            if (!user) {
+                return { success: false, message: 'بيانات الدخول غير صحيحة' };
+            }
+            
+            // تحديث وقت الدخول الأخير
+            user.last_login = new Date().toISOString();
+            saveDataToStorage();
+            
+            // حفظ بيانات المستخدم الحالي
+            currentUser = {
+                id: user.id,
+                fullname: user.fullname,
+                username: user.username,
+                email: user.email,
+                role: user.role,
+                telegram_id: user.telegram_id
+            };
+            
+            if (rememberMe) {
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            } else {
+                sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+            }
+            
+            // إضافة سجل
+            addSystemLog(`تسجيل دخول المستخدم: ${user.username}`, 'info');
+            
+            // إرسال إشعار إذا كان المشرفين مسجلين للدخول
+            if (user.role === '' && notificationSettings.notifyAdminLogins) {
+                showNotification(`المشرف ${user.username} قام بتسجيل الدخول`, 'warning');
+            }
+            
+            return { 
+                success: true, 
+                message: `مرحباً ${user.fullname}!`,
+                user: currentUser
+            };
+        }
+        
+        function loginAdmin(username, password, securityCode) {
+            if (securityCode !== ADMIN_SECURITY_CODE) {
+                return { success: false, message: 'كود الأمان غير صحيح' };
+            }
+            
+            const  = users.find(u => 
+                u.username === username && 
+                u.password === password && 
+                u.role === '' &&
+                u.status !== 'banned'
+            );
+            
+            if (!) {
+                return { success: false, message: 'بيانات المشرف غير صحيحة' };
+            }
+            
+            // تحديث وقت الدخول الأخير
+            .last_login = new Date().toISOString();
+            saveDataToStorage();
+            
+            // حفظ بيانات المشرف الحالي
+            currentUser = {
+                id: .id,
+                fullname: .fullname,
+                username: .username,
+                email: .email,
+                role: .role,
+                telegram_id: .telegram_id
+            };
+            
+            sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+            
+            // إضافة سجل
+            addSystemLog(`تسجيل دخول المشرف: ${.username}`, 'warning');
+            
+            return { 
+                success: true, 
+                message: `مرحباً ${.fullname}!`,
+                user: currentUser
+            };
+        }
+        
+        function registerUser(userData) {
+            // التحقق من التكرار
+            const usernameExists = users.some(u => u.username === userData.username);
+            const emailExists = users.some(u => u.email === userData.email);
+            
+            if (usernameExists) {
+                return { success: false, message: 'اسم المستخدم موجود مسبقاً' };
+            }
+            
+            if (emailExists) {
+                return { success: false, message: 'البريد الإلكتروني موجود مسبقاً' };
+            }
+            
+            // إنشاء مستخدم جديد
+            const newUser = {
+                id: Date.now(),
+                fullname: userData.fullname,
+                username: userData.username,
+                email: userData.email,
+                password: userData.password,
+                role: 'user',
+                status: 'active',
+                telegram_id: userData.telegram_id || null,
+                created_at: new Date().toISOString(),
+                last_login: null,
+                last_password_change: new Date().toISOString()
+            };
+            
+            users.push(newUser);
+            saveDataToStorage();
+            
+            // إضافة سجل
+            addSystemLog(`تسجيل مستخدم جديد: ${userData.username}`, 'success');
+            
+            // إرسال إشعار إذا كان مسجل
+            if (notificationSettings.notifyNewUsers) {
+                showNotification(`مستخدم جديد: ${userData.username} - ${userData.email}`, 'info');
+            }
+            
+            return { 
+                success: true, 
+                message: 'تم إنشاء الحساب بنجاح!',
+                user: newUser
+            };
+        }
+        
+        // ============================================
+        // معالجة النماذج
+        // ============================================
+        
+        // تسجيل الدخول
+        document.getElementById('loginForm')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const rememberMe = document.getElementById('rememberMe')?.checked || false;
+            
+            if (!username || !password) {
+                showMessage('loginMessage', 'الرجاء ملء جميع الحقول', 'error');
+                return;
+            }
+            
+            const result = loginUser(username, password, rememberMe);
+            
+            if (result.success) {
+                showMessage('loginMessage', result.message, 'success');
+                
+                setTimeout(() => {
+                    if (result.user.role === '') {
+                        showPage('DashboardPage');
+                    } else {
+                        showPage('userDashboardPage');
+                    }
+                }, 1500);
+            } else {
+                showMessage('loginMessage', result.message, 'error');
+            }
+        });
+        
+        // تسجيل الدخول كمسؤول
+        document.getElementById('LoginForm')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('Username').value.trim();
+            const password = document.getElementById('Password').value;
+            const securityCode = document.getElementById('Code').value.trim();
+            
+            if (!username || !password || !securityCode) {
+                showMessage('Message', 'الرجاء ملء جميع الحقول', 'error');
+                return;
+            }
+            
+            const result = loginAdmin(username, password, securityCode);
+            
+            if (result.success) {
+                showMessage('Message', result.message, 'success');
+                
+                setTimeout(() => {
+                    showPage('DashboardPage');
+                }, 1500);
+            } else {
+                showMessage('Message', result.message, 'error');
+            }
+        });
+        
+        // ============================================
+        // إدارة لوحة التحكم
+        // ============================================
+        
+        function updateAdminDashboard() {
+            if (!currentUser) return;
+            
+            // تحديث معلومات المشرف
+            document.getElementById('Name').textContent = currentUser.fullname;
+            document.getElementById('Email').textContent = currentUser.email;
+            
+            // تحديث الإحصائيات
+            const totalUsers = users.length;
+            const activeUsers = users.filter(u => u.status === 'active').length;
+            const bannedUsers = users.filter(u => u.status === 'banned').length;
+            const Users = users.filter(u => u.role === '').length;
+            
+            document.getElementById('StatsTotal').textContent = totalUsers;
+            document.getElementById('StatsActive').textContent = activeUsers;
+            document.getElementById('StatsBanned').textContent = bannedUsers;
+            document.getElementById('StatsAdmins').textContent = Users;
+            
+            // تحديث جدول المستخدمين
+            updateUsersTable();
+            
+            // تحديث السجلات
+            displayLogs();
+        }
+        
+        function updateUserDashboard() {
+            if (!currentUser) return;
+            
+            // تحديث معلومات المستخدم
+            document.getElementById('userName').textContent = currentUser.fullname;
+            document.getElementById('userEmail').textContent = currentUser.email;
+            
+            // تحديث الإحصائيات البسيطة
+            const totalUsers = users.length;
+            const activeUsers = users.filter(u => u.status === 'active').length;
+            
+            document.getElementById('userStatsTotal').textContent = totalUsers;
+            document.getElementById('userStatsActive').textContent = activeUsers;
+            
+            // تحديث جدول المستخدمين (محدود)
+            displayUsersForUser();
+        }
+        
+        function updateUsersTable() {
+            const tableBody = document.getElementById('UsersTableBody');
+            if (!tableBody) return;
+            
+            let html = '';
+            users.forEach((user, index) => {
+                const statusBadge = user.status === 'active' ? 
+                    '<span class="badge badge-success">نشط</span>' : 
+                    '<span class="badge badge-danger">محظور</span>';
+                
+                const roleBadge = user.role === '' ? 
+                    '<span class="badge badge-warning">مشرف</span>' : 
+                    '<span class="badge badge-primary">مستخدم</span>';
+                
+                const date = new Date(user.created_at).toLocaleDateString('ar-EG');
+                
+                html += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${user.fullname}</td>
+                        <td>${user.username}</td>
+                        <td>${user.email}</td>
+                        <td>${roleBadge}</td>
+                        <td>${statusBadge}</td>
+                        <td>${date}</td>
+                        <td>
+                            <button class="btn btn-sm btn-light" onclick="editUser(${user.id})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteUser(${user.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tableBody.innerHTML = html;
+        }
+        
+        function displayUsersForUser() {
+            const tableBody = document.getElementById('usersTableBody');
+            if (!tableBody) return;
+            
+            let html = '';
+            users.slice(0, 10).forEach((user, index) => {
+                const statusBadge = user.status === 'active' ? 
+                    '<span class="badge badge-success">نشط</span>' : 
+                    '<span class="badge badge-danger">محظور</span>';
+                
+                const roleBadge = user.role === '' ? 
+                    '<span class="badge badge-warning">مشرف</span>' : 
+                    '<span class="badge badge-primary">مستخدم</span>';
+                
+                const date = new Date(user.created_at).toLocaleDateString('ar-EG');
+                
+                html += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${user.fullname}</td>
+                        <td>${user.email}</td>
+                        <td>${roleBadge}</td>
+                        <td>${statusBadge}</td>
+                        <td>${date}</td>
+                    </tr>
+                `;
+            });
+            
+            tableBody.innerHTML = html;
+        }
+        
+        function displayLogs() {
+            const container = document.getElementById('logsContainer');
+            if (!container) return;
+            
+            let html = '';
+            systemLogs.slice(0, 50).forEach(log => {
+                const time = new Date(log.timestamp).toLocaleTimeString('ar-EG');
+                const date = new Date(log.timestamp).toLocaleDateString('ar-EG');
+                
+                let typeColor = '#00ff00'; // info
+                if (log.type === 'warning') typeColor = '#ffa500';
+                if (log.type === 'error') typeColor = '#ff0000';
+                if (log.type === 'success') typeColor = '#00ff00';
+                
+                html += `
+                    <div class="log-entry" style="margin-bottom: 10px;">
+                        <span style="color: #888;">[${date} ${time}]</span>
+                        <span style="color: ${typeColor};"> ${log.action}</span>
+                        <span style="color: #ffd700;"> - ${log.user}</span>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+            container.scrollTop = 0;
+        }
+        
+        function switchAdminTab(tabName) {
+            // إخفاء جميع المحتويات
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // إزالة النشاط من جميع الأزرار
+            document.querySelectorAll('.tab').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // إظهار المحتوى المطلوب
+            document.getElementById(`${tabName.charAt(0).toUpperCase() + tabName.slice(1)}Tab`).classList.add('active');
+            
+            // تفعيل الزر المطلوب
+            event.target.classList.add('active');
+            
+            // تحميل البيانات إذا لزم
+            if (tabName === 'logs') {
+                displayLogs();
+            } else if (tabName === 'users') {
+                updateUsersTable();
+            }
+        }
+        
+        function refreshStats() {
+            updateAdminDashboard();
+            showNotification('تم تحديث الإحصائيات', 'success');
+        }
+        
+        function openAddUserModal() {
+            document.getElementById('addUserModal').style.display = 'flex';
+        }
+        
+        function closeModal() {
+            document.getElementById('addUserModal').style.display = 'none';
+        }
+        
+        // ============================================
+        // إدارة المستخدمين (للمشرفين)
+        // ============================================
+        
+        function editUser(userId) {
+            const user = users.find(u => u.id === userId);
+            if (!user) return;
+            
+            alert(`تحرير المستخدم: ${user.fullname}\n\nهذه الخاصية قيد التطوير.`);
+        }
+        
+        function deleteUser(userId) {
+            if (!confirm('هل أنت متأكد من حذف هذا المستخدم؟ لا يمكن التراجع عن هذا الإجراء.')) {
+                return;
+            }
+            
+            const userIndex = users.findIndex(u => u.id === userId);
+            if (userIndex === -1) return;
+            
+            const deletedUser = users[userIndex];
+            users.splice(userIndex, 1);
+            saveDataToStorage();
+            
+            addSystemLog(`حذف المستخدم: ${deletedUser.username}`, 'error');
+            updateUsersTable();
+            
+            showNotification(`تم حذف المستخدم: ${deletedUser.username}`, 'error');
+        }
+        
+        // ============================================
+        // نظام استعادة كلمة المرور
+        // ============================================
+        
+        function generateOTP() {
+            return Math.floor(100000 + Math.random() * 900000).toString();
+        }
+        
+        function sendOTP(email) {
+            const user = users.find(u => u.email === email);
+            if (!user) {
+                return { success: false, message: 'البريد الإلكتروني غير مسجل' };
+            }
+            
+            // إنشاء OTP جديد
+            const otp = generateOTP();
+            const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 دقائق
+            
+            // حفظ بيانات الاستعادة
+            recoveryData = {
+                email: email,
+                userId: user.id,
+                otp: otp,
+                otpExpires: expires
+            };
+            
+            // في التطبيق الحقيقي، هنا نرسل OTP للبريد الإلكتروني
+            console.log(`OTP لـ ${email}: ${otp} (تنتهي في: ${expires.toLocaleTimeString()})`);
+            
+            return { 
+                success: true, 
+                message: 'تم إرسال رمز التحقق إلى بريدك الإلكتروني',
+                otp: otp // لإظهاره في console للاختبار فقط
+            };
+        }
+        
+        function verifyOTP(otp) {
+            if (!recoveryData.otp || !recoveryData.otpExpires) {
+                return { success: false, message: 'لم يتم إرسال رمز تحقق' };
+            }
+            
+            if (new Date() > new Date(recoveryData.otpExpires)) {
+                return { success: false, message: 'انتهت صلاحية رمز التحقق' };
+            }
+            
+            if (recoveryData.otp !== otp) {
+                return { success: false, message: 'رمز التحقق غير صحيح' };
+            }
+            
+            return { success: true, message: 'تم التحقق بنجاح' };
+        }
+        
+        function resetPassword(newPassword) {
+            const userIndex = users.findIndex(u => u.id === recoveryData.userId);
+            if (userIndex === -1) {
+                return { success: false, message: 'المستخدم غير موجود' };
+            }
+            
+            // تحديث كلمة المرور
+            users[userIndex].password = newPassword;
+            users[userIndex].last_password_change = new Date().toISOString();
+            saveDataToStorage();
+            
+            // إضافة سجل
+            addSystemLog(`إعادة تعيين كلمة مرور للمستخدم: ${users[userIndex].username}`, 'warning');
+            
+            // مسح بيانات الاستعادة
+            recoveryData = { email: "", userId: null, otp: "", otpExpires: null };
+            
+            return { 
+                success: true, 
+                message: 'تم تغيير كلمة المرور بنجاح' 
+            };
+        }
+        
+        // ============================================
+        // نظام تيليجرام (محاكاة)
+        // ============================================
+        
+        function saveTelegramSettings() {
+            const botToken = document.getElementById('botToken').value;
+            const supportChannel = document.getElementById('supportChannel').value;
+            
+            telegramSettings.botToken = botToken;
+            telegramSettings.supportChannel = supportChannel;
+            
+            localStorage.setItem('telegramSettings', JSON.stringify(telegramSettings));
+            
+            showNotification('تم حفظ إعدادات تيليجرام', 'success');
+            addSystemLog('تحديث إعدادات بوت تيليجرام', 'info');
+        }
+        
+        function banUserViaTelegram() {
+            const userId = document.getElementById('banUserId').value;
+            const reason = document.getElementById('banReason').value;
+            
+            if (!userId) {
+                showNotification('الرجاء إدخال معرف المستخدم', 'error');
+                return;
+            }
+            
+            // محاكاة حظر المستخدم
+            showNotification(`تم حظر المستخدم ${userId} - السبب: ${reason || 'بدون سبب'}`, 'warning');
+            addSystemLog(`حظر مستخدم عبر تيليجرام: ${userId}`, 'warning');
+        }
+        
+        function sendTelegramNotification() {
+            const message = document.getElementById('telegramMessage').value;
+            
+            if (!message) {
+                showNotification('الرجاء كتابة الرسالة', 'error');
+                return;
+            }
+            
+            // محاكاة إرسال الإشعار
+            showNotification(`تم إرسال إشعار إلى جميع المستخدمين: ${message.substring(0, 50)}...`, 'info');
+            addSystemLog('إرسال إشعار عبر تيليجرام', 'info');
+            
+            // مسح حقل الرسالة
+            document.getElementById('telegramMessage').value = '';
+        }
+        
+        // ============================================
+        // إدارة السجلات
+        // ============================================
+        
+        function exportLogs() {
+            const dataStr = JSON.stringify(systemLogs, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `system_logs_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showNotification('تم تصدير سجلات النظام', 'success');
+            addSystemLog('تصدير سجلات النظام', 'info');
+        }
+        
+        function clearLogs() {
+            if (!confirm('هل أنت متأكد من مسح جميع سجلات النظام؟ لا يمكن التراجع عن هذا الإجراء.')) {
+                return;
+            }
+            
+            systemLogs = [];
+            localStorage.setItem('systemLogs', JSON.stringify(systemLogs));
+            displayLogs();
+            
+            showNotification('تم مسح جميع سجلات النظام', 'warning');
+            addSystemLog('مسح جميع سجلات النظام', 'warning');
+        }
+        
+        // ============================================
+        // إدارة الإعدادات
+        // ============================================
+        
+        function showAdminSettings() {
+            switchAdminTab('settings');
+        }
+        
+        function changeSecurityCode() {
+            const newCode = prompt('أدخل كود الأمان الجديد:');
+            if (newCode && newCode.length >= 8) {
+                // في التطبيق الحقيقي، هنا نحدث الكود
+                showNotification('تم طلب تغيير كود الأمان', 'info');
+                addSystemLog('طلب تغيير كود أمان المشرفين', 'warning');
+            }
+        }
+        
+        function saveNotificationSettings() {
+            notificationSettings.notifyNewUsers = document.getElementById('notifyNewUsers').checked;
+            notificationSettings.notifyAdminLogins = document.getElementById('notifyAdminLogins').checked;
+            notificationSettings.notifyBans = document.getElementById('notifyBans').checked;
+            
+            localStorage.setItem('notificationSettings', JSON.stringify(notificationSettings));
+            
+            showNotification('تم حفظ إعدادات الإشعارات', 'success');
+            addSystemLog('تحديث إعدادات الإشعارات', 'info');
+        }
+        
+        // ============================================
+        // دوال مساعدة إضافية
+        // ============================================
+        
+        function resetLoginForm() {
+            const form = document.getElementById('loginForm');
+            if (form) form.reset();
+        }
+        
+        function resetRegisterForm() {
+            const form = document.getElementById('registerForm');
+            if (form) form.reset();
+        }
+        
+        function resetForgotForm() {
+            const form = document.getElementById('forgotEmailForm');
+            if (form) form.reset();
+        }
+        
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+        
+        function isStrongPassword(password) {
+            return password.length >= 8 &&
+                   /[A-Z]/.test(password) &&
+                   /[0-9]/.test(password) &&
+                   /[^A-Za-z0-9]/.test(password);
+        }
+        
+        // ============================================
+        // تهيئة النظام عند التحميل
+        // ============================================
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeSystem();
+            
+            // تهيئة إعدادات الإشعارات في الواجهة
+            document.getElementById('notifyNewUsers').checked = notificationSettings.notifyNewUsers;
+            document.getElementById('notifyAdminLogins').checked = notificationSettings.notifyAdminLogins;
+            document.getElementById('notifyBans').checked = notificationSettings.notifyBans;
+            
+            // تهيئة إعدادات تيليجرام
+            document.getElementById('botToken').value = telegramSettings.botToken;
+            document.getElementById('supportChannel').value = telegramSettings.supportChannel;
+            
+            console.log('تم تحميل النظام بنجاح!');
+        });
+        
+        // ============================================
+        // معالجة الأحداث الإضافية
+        // ============================================
+        
+        // البحث عن المستخدمين
+        document.getElementById('searchUsers')?.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('#UsersTableBody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+        
+        // إضافة مستخدم جديد
+        document.getElementById('addUserForm')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const fullname = document.getElementById('newUserFullname').value;
+            const username = document.getElementById('newUserUsername').value;
+            const email = document.getElementById('newUserEmail').value;
+            const password = document.getElementById('newUserPassword').value;
+            const role = document.getElementById('newUserRole').value;
+            
+            // التحقق من البيانات
+            if (!fullname || !username || !email || !password) {
+                showNotification('الرجاء ملء جميع الحقول', 'error');
+                return;
+            }
+            
+            if (!isValidEmail(email)) {
+                showNotification('البريد الإلكتروني غير صالح', 'error');
+                return;
+            }
+            
+            // التحقق من التكرار
+            const usernameExists = users.some(u => u.username === username);
+            const emailExists = users.some(u => u.email === email);
+            
+            if (usernameExists) {
+                showNotification('اسم المستخدم موجود مسبقاً', 'error');
+                return;
+            }
+            
+            if (emailExists) {
+                showNotification('البريد الإلكتروني موجود مسبقاً', 'error');
+                return;
+            }
+            
+            // إنشاء المستخدم
+            const newUser = {
+                id: Date.now(),
+                fullname: fullname,
+                username: username,
+                email: email,
+                password: password,
+                role: role,
+                status: 'active',
+                telegram_id: null,
+                created_at: new Date().toISOString(),
+                last_login: null,
+                last_password_change: new Date().toISOString()
+            };
+            
+            users.push(newUser);
+            saveDataToStorage();
+            
+            // إضافة سجل
+            addSystemLog(`إضافة مستخدم جديد بواسطة المشرف: ${username}`, 'success');
+            
+            // إغلاق المودال وتحديث الجدول
+            closeModal();
+            updateUsersTable();
+            
+            showNotification(`تم إضافة المستخدم: ${username}`, 'success');
+            
+            // إعادة تعيين النموذج
+            this.reset();
+        });
+        
+        // ============================================
+        // دوال خاصة بتسجيل المستخدمين الجدد
+        // ============================================
+        
+        let currentRegisterStep = 1;
+        
+        function nextRegisterStep(step) {
+            // التحقق من صحة الخطوة الحالية
+            if (currentRegisterStep === 1) {
+                const fullname = document.getElementById('fullName').value.trim();
+                const username = document.getElementById('regUsername').value.trim();
+                const email = document.getElementById('regEmail').value.trim();
+                
+                if (!fullname || !username || !email) {
+                    showMessage('registerMessage', 'الرجاء ملء جميع الحقول', 'error');
+                    return;
+                }
+                
+                if (username.length < 3) {
+                    showMessage('registerMessage', 'اسم المستخدم يجب أن يكون 3 أحرف على الأقل', 'error');
+                    return;
+                }
+                
+                if (!isValidEmail(email)) {
+                    showMessage('registerMessage', 'صيغة البريد الإلكتروني غير صحيحة', 'error');
+                    return;
+                }
+            }
+            
+            // الانتقال للخطوة التالية
+            document.getElementById(`step${currentRegisterStep}`).classList.remove('active');
+            document.getElementById(`registerStep${currentRegisterStep}`).style.display = 'none';
+            
+            currentRegisterStep = step;
+            
+            document.getElementById(`step${currentRegisterStep}`).classList.add('active');
+            document.getElementById(`registerStep${currentRegisterStep}`).style.display = 'block';
+            
+            // إخفاء الرسالة
+            const messageDiv = document.getElementById('registerMessage');
+            if (messageDiv) messageDiv.style.display = 'none';
+        }
+        
+        function prevRegisterStep(step) {
+            document.getElementById(`step${currentRegisterStep}`).classList.remove('active');
+            document.getElementById(`registerStep${currentRegisterStep}`).style.display = 'none';
+            
+            currentRegisterStep = step;
+            
+            document.getElementById(`step${currentRegisterStep}`).classList.add('active');
+            document.getElementById(`registerStep${currentRegisterStep}`).style.display = 'block';
+        }
+        
+        // التحقق من توفر اسم المستخدم
+        document.getElementById('regUsername')?.addEventListener('input', function() {
+            const username = this.value.trim();
+            const statusSpan = document.getElementById('usernameStatus');
+            
+            if (username.length < 3) {
+                statusSpan.textContent = 'يجب أن يكون 3 أحرف على الأقل';
+                statusSpan.style.color = '#ff416c';
+                return;
+            }
+            
+            const usernameExists = users.some(user => user.username === username);
+            
+            if (usernameExists) {
+                statusSpan.textContent = '⛔ هذا الاسم موجود مسبقاً';
+                statusSpan.style.color = '#ff416c';
+            } else {
+                statusSpan.textContent = '✅ هذا الاسم متاح';
+                statusSpan.style.color = '#38ef7d';
+            }
+        });
+        
+        // التحقق من توفر البريد الإلكتروني
+        document.getElementById('regEmail')?.addEventListener('input', function() {
+            const email = this.value.trim();
+            const statusSpan = document.getElementById('emailStatus');
+            
+            if (!isValidEmail(email)) {
+                statusSpan.textContent = 'صيغة البريد غير صحيحة';
+                statusSpan.style.color = '#ff416c';
+                return;
+            }
+            
+            const emailExists = users.some(user => user.email === email);
+            
+            if (emailExists) {
+                statusSpan.textContent = '⛔ هذا البريد مسجل مسبقاً';
+                statusSpan.style.color = '#ff416c';
+            } else {
+                statusSpan.textContent = '✅ هذا البريد متاح';
+                statusSpan.style.color = '#38ef7d';
+            }
+        });
+        
+        // التحقق من قوة كلمة المرور
+        document.getElementById('regPassword')?.addEventListener('input', function() {
+            const password = this.value;
+            
+            // تحديث معايير كلمة المرور
+            const criteria = {
+                length: password.length >= 8,
+                uppercase: /[A-Z]/.test(password),
+                number: /[0-9]/.test(password),
+                special: /[^A-Za-z0-9]/.test(password)
+            };
+            
+            // تحديث العرض
+            Object.keys(criteria).forEach(key => {
+                const element = document.getElementById(`criterion${key.charAt(0).toUpperCase() + key.slice(1)}`);
+                const icon = element.querySelector('i');
+                
+                if (password.length === 0) {
+                    element.className = 'criterion';
+                    icon.className = 'fas fa-circle';
+                    icon.style.color = '#666';
+                } else if (criteria[key]) {
+                    element.className = 'criterion valid';
+                    icon.className = 'fas fa-check-circle';
+                    icon.style.color = '#38ef7d';
+                } else {
+                    element.className = 'criterion invalid';
+                    icon.className = 'fas fa-times-circle';
+                    icon.style.color = '#ff416c';
+                }
+            });
+        });
+        
+        // التحقق من تطابق كلمة المرور
+        document.getElementById('regConfirmPassword')?.addEventListener('input', function() {
+            const password = document.getElementById('regPassword').value;
+            const confirmPassword = this.value;
+            const statusSpan = document.getElementById('passwordMatchStatus');
+            
+            if (confirmPassword.length === 0) {
+                statusSpan.textContent = '';
+                return;
+            }
+            
+            if (password === confirmPassword) {
+                statusSpan.textContent = '✅ كلمات المرور متطابقة';
+                statusSpan.style.color = '#38ef7d';
+            } else {
+                statusSpan.textContent = '⛔ كلمات المرور غير متطابقة';
+                statusSpan.style.color = '#ff416c';
+            }
+        });
+        
+        // معالجة تسجيل المستخدم الجديد
+        document.getElementById('registerForm')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const fullname = document.getElementById('fullName').value.trim();
+            const username = document.getElementById('regUsername').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const password = document.getElementById('regPassword').value;
+            const confirmPassword = document.getElementById('regConfirmPassword').value;
+            const telegramId = document.getElementById('telegramId')?.value.trim() || '';
+            const agreeTerms = document.getElementById('agreeTerms').checked;
+            
+            // التحقق النهائي
+            if (!fullname || !username || !email || !password || !confirmPassword) {
+                showMessage('registerMessage', 'الرجاء ملء جميع الحقول المطلوبة', 'error');
+                return;
+            }
+            
+            if (!agreeTerms) {
+                showMessage('registerMessage', 'يجب الموافقة على شروط الاستخدام', 'error');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                showMessage('registerMessage', 'كلمات المرور غير متطابقة', 'error');
+                return;
+            }
+            
+            if (!isStrongPassword(password)) {
+                showMessage('registerMessage', 'كلمة المرور ضعيفة. يجب أن تكون 8 أحرف على الأقل وتحتوي على حرف كبير ورقم ورمز خاص', 'error');
+                return;
+            }
+            
+            // تسجيل المستخدم الجديد
+            const userData = {
+                fullname: fullname,
+                username: username,
+                email: email,
+                password: password,
+                telegram_id: telegramId
+            };
+            
+            const result = registerUser(userData);
+            
+            if (result.success) {
+                // الانتقال لخطوة النجاح
+                document.getElementById(`step${currentRegisterStep}`).classList.remove('active');
+                document.getElementById(`registerStep${currentRegisterStep}`).style.display = 'none';
+                
+                // عرض تفاصيل الحساب
+                document.getElementById('registeredUsername').textContent = username;
+                document.getElementById('registeredEmail').textContent = email;
+                document.getElementById('registrationDate').textContent = new Date().toLocaleDateString('ar-EG');
+                
+                // إظهار خطوة النجاح
+                document.getElementById('registerStep4').style.display = 'block';
+                
+                showMessage('registerMessage', result.message, 'success');
+            } else {
+                showMessage('registerMessage', result.message, 'error');
+            }
+        });
+        
+        // ============================================
+        // دوال خاصة باستعادة كلمة المرور
+        // ============================================
+        
+        let currentForgotStep = 1;
+        let otpTimer = null;
+        let otpTimeLeft = 120;
+        
+        function nextForgotStep(step) {
+            document.getElementById(`forgotStep${currentForgotStep}`).classList.remove('active');
+            document.getElementById(`forgotStep${currentForgotStep}Content`).style.display = 'none';
+            
+            currentForgotStep = step;
+            
+            document.getElementById(`forgotStep${currentForgotStep}`).classList.add('active');
+            document.getElementById(`forgotStep${currentForgotStep}Content`).style.display = 'block';
+            
+            // إخفاء الرسالة
+            const messageDiv = document.getElementById('forgotMessage');
+            if (messageDiv) messageDiv.style.display = 'none';
+            
+            // تهيئة خاصة لكل خطوة
+            if (step === 2) {
+                createOTPInputs();
+                startOTPTimer();
+            } else if (step === 3) {
+                // إضافة أحداث للتحقق من كلمة المرور
+                const newPasswordInput = document.getElementById('newPassword');
+                const confirmPasswordInput = document.getElementById('confirmNewPassword');
+                
+                if (newPasswordInput) {
+                    newPasswordInput.addEventListener('input', checkForgotPasswordCriteria);
+                }
+                if (confirmPasswordInput) {
+                    confirmPasswordInput.addEventListener('input', checkForgotPasswordMatch);
+                }
+            }
+        }
+        
+        function prevForgotStep(step) {
+            document.getElementById(`forgotStep${currentForgotStep}`).classList.remove('active');
+            document.getElementById(`forgotStep${currentForgotStep}Content`).style.display = 'none';
+            
+            currentForgotStep = step;
+            
+            document.getElementById(`forgotStep${currentForgotStep}`).classList.add('active');
+            document.getElementById(`forgotStep${currentForgotStep}Content`).style.display = 'block';
+            
+            // إيقاف المؤقت إذا عدنا للخطوة 1
+            if (step === 1 && otpTimer) {
+                clearInterval(otpTimer);
+                otpTimer = null;
+            }
+        }
+        
+        function createOTPInputs() {
+            const container = document.getElementById('otpContainer');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            for (let i = 0; i < 6; i++) {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.maxLength = 1;
+                input.className = 'otp-input';
+                input.id = `otpInput-${i}`;
+                input.inputMode = 'numeric';
+                
+                input.addEventListener('input', function(e) {
+                    // السماح فقط بالأرقام
+                    this.value = this.value.replace(/\D/g, '');
+                    
+                    // الانتقال للحقل التالي
+                    if (this.value.length === 1 && i < 5) {
+                        document.getElementById(`otpInput-${i + 1}`).focus();
+                    }
+                    
+                    // التحقق التلقائي عند اكتمال جميع الحقول
+                    if (i === 5 && this.value.length === 1) {
+                        setTimeout(verifyForgotOTP, 100);
+                    }
+                });
+                
+                input.addEventListener('keydown', function(e) {
+                    // الانتقال للحقل السابق عند backspace
+                    if (e.key === 'Backspace' && this.value.length === 0 && i > 0) {
+                        document.getElementById(`otpInput-${i - 1}`).focus();
+                    }
+                });
+                
+                container.appendChild(input);
+            }
+            
+            // التركيز على الحقل الأول
+            setTimeout(() => {
+                const firstInput = document.getElementById('otpInput-0');
+                if (firstInput) firstInput.focus();
+            }, 100);
+        }
+        
+        function startOTPTimer() {
+            clearInterval(otpTimer);
+            otpTimeLeft = 120;
+            
+            const timerElement = document.getElementById('resendTimer');
+            const resendLink = document.getElementById('resendLink');
+            
+            if (!timerElement || !resendLink) return;
+            
+            resendLink.style.pointerEvents = 'none';
+            resendLink.style.opacity = '0.5';
+            
+            otpTimer = setInterval(() => {
+                otpTimeLeft--;
+                
+                const minutes = Math.floor(otpTimeLeft / 60);
+                const seconds = otpTimeLeft % 60;
+                timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (otpTimeLeft <= 0) {
+                    clearInterval(otpTimer);
+                    resendLink.style.pointerEvents = 'auto';
+                    resendLink.style.opacity = '1';
+                    timerElement.textContent = 'انتهى الوقت';
+                }
+            }, 1000);
+        }
+        
+        function resendOTP() {
+            if (otpTimeLeft > 0) return;
+            
+            const email = document.getElementById('forgotEmail').value;
+            const result = sendOTP(email);
+            
+            if (result.success) {
+                showMessage('forgotMessage', 'تم إعادة إرسال رمز التحقق', 'success');
+                
+                // إعادة تعيين الحقول
+                for (let i = 0; i < 6; i++) {
+                    const input = document.getElementById(`otpInput-${i}`);
+                    if (input) input.value = '';
+                }
+                
+                // التركيز على الحقل الأول
+                setTimeout(() => {
+                    const firstInput = document.getElementById('otpInput-0');
+                    if (firstInput) firstInput.focus();
+                }, 100);
+                
+                // إعادة تشغيل المؤقت
+                startOTPTimer();
+            } else {
+                showMessage('forgotMessage', result.message, 'error');
+            }
+        }
+        
+        function verifyForgotOTP() {
+            let enteredOTP = '';
+            for (let i = 0; i < 6; i++) {
+                const input = document.getElementById(`otpInput-${i}`);
+                if (input) {
+                    enteredOTP += input.value;
+                }
+            }
+            
+            const result = verifyOTP(enteredOTP);
+            
+            if (result.success) {
+                showMessage('forgotMessage', 'تم التحقق بنجاح!', 'success');
+                setTimeout(() => nextForgotStep(3), 1000);
+            } else {
+                showMessage('forgotMessage', result.message, 'error');
+                
+                // تأثير الاهتزاز
+                for (let i = 0; i < 6; i++) {
+                    const input = document.getElementById(`otpInput-${i}`);
+                    if (input) {
+                        input.classList.add('shake');
+                        setTimeout(() => input.classList.remove('shake'), 500);
+                    }
+                }
+            }
+        }
+        
+        function checkForgotPasswordCriteria() {
+            const password = document.getElementById('newPassword').value;
+            
+            const criteria = {
+                length: password.length >= 8,
+                uppercase: /[A-Z]/.test(password),
+                number: /[0-9]/.test(password),
+                special: /[^A-Za-z0-9]/.test(password)
+            };
+            
+            Object.keys(criteria).forEach(key => {
+                const element = document.getElementById(`forgotCriterion${key.charAt(0).toUpperCase() + key.slice(1)}`);
+                const icon = element.querySelector('i');
+                
+                if (password.length === 0) {
+                    element.className = 'criterion';
+                    icon.className = 'fas fa-circle';
+                    icon.style.color = '#666';
+                } else if (criteria[key]) {
+                    element.className = 'criterion valid';
+                    icon.className = 'fas fa-check-circle';
+                    icon.style.color = '#38ef7d';
+                } else {
+                    element.className = 'criterion invalid';
+                    icon.className = 'fas fa-times-circle';
+                    icon.style.color = '#ff416c';
+                }
+            });
+        }
+        
+        function checkForgotPasswordMatch() {
+            const password = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmNewPassword').value;
+            const statusSpan = document.getElementById('forgotPasswordMatchStatus');
+            
+            if (confirmPassword.length === 0) {
+                statusSpan.textContent = '';
+                return;
+            }
+            
+            if (password === confirmPassword) {
+                statusSpan.textContent = '✅ كلمات المرور متطابقة';
+                statusSpan.style.color = '#38ef7d';
+            } else {
+                statusSpan.textContent = '⛔ كلمات المرور غير متطابقة';
+                statusSpan.style.color = '#ff416c';
+            }
+        }
+        
+        // معالجة استعادة كلمة المرور - الخطوة 1
+        document.getElementById('forgotEmailForm')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('forgotEmail').value.trim();
+            
+            if (!email) {
+                showMessage('forgotMessage', 'الرجاء إدخال البريد الإلكتروني', 'error');
+                return;
+            }
+            
+            if (!isValidEmail(email)) {
+                showMessage('forgotMessage', 'صيغة البريد الإلكتروني غير صحيحة', 'error');
+                return;
+            }
+            
+            const result = sendOTP(email);
+            
+            if (result.success) {
+                showMessage('forgotMessage', result.message, 'success');
+                document.getElementById('sentEmail').textContent = email;
+                
+                setTimeout(() => nextForgotStep(2), 1000);
+            } else {
+                showMessage('forgotMessage', result.message, 'error');
+            }
+        });
+        
+        // معالجة استعادة كلمة المرور - الخطوة 2
+        document.getElementById('otpForm')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            verifyForgotOTP();
+        });
+        
+        // معالجة استعادة كلمة المرور - الخطوة 3
+        document.getElementById('forgotPasswordForm')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmNewPassword').value;
+            
+            // التحقق من المعايير
+            const isStrong = isStrongPassword(newPassword);
+            const isMatching = newPassword === confirmPassword;
+            
+            if (!isStrong) {
+                showMessage('forgotMessage', 'كلمة المرور لا تفي بالمعايير المطلوبة', 'error');
+                return;
+            }
+            
+            if (!isMatching) {
+                showMessage('forgotMessage', 'كلمات المرور غير متطابقة', 'error');
+                return;
+            }
+            
+            const result = resetPassword(newPassword);
+            
+            if (result.success) {
+                showMessage('forgotMessage', result.message, 'success');
+                setTimeout(() => nextForgotStep(4), 1000);
+            } else {
+                showMessage('forgotMessage', result.message, 'error');
+            }
+        });
+    </script>
+</body>
+</html>
