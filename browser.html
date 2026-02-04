@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تصفح الاقتباسات - اقتباس</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- الهيدر -->
+        <header class="app-header">
+            <div class="header-left">
+                <div class="logo">
+                    <i class="fas fa-quote-right"></i>
+                </div>
+            </div>
+            
+            <div class="header-center">
+                <h1>تصفح الاقتباسات</h1>
+            </div>
+            
+            <div class="header-right">
+                <a href="post.html" class="icon-btn">
+                    <i class="fas fa-plus"></i>
+                </a>
+                <a href="profile.html" class="icon-btn">
+                    <i class="fas fa-user"></i>
+                </a>
+            </div>
+        </header>
+        
+        <!-- التنقل -->
+        <nav class="tabs">
+            <button class="tab active" data-filter="all">
+                <i class="fas fa-globe"></i> الكل
+            </button>
+            <button class="tab" data-filter="popular">
+                <i class="fas fa-fire"></i> الأكثر شيوعاً
+            </button>
+            <button class="tab" data-filter="recent">
+                <i class="fas fa-clock"></i> حديثة
+            </button>
+            <button class="tab" data-filter="following">
+                <i class="fas fa-users"></i> المتابَعين
+            </button>
+        </nav>
+        
+        <!-- حقل البحث -->
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="ابحث عن اقتباس أو كاتب..." id="searchInput">
+            <button class="search-filter" id="filterBtn">
+                <i class="fas fa-filter"></i>
+            </button>
+        </div>
+        
+        <!-- الفئات -->
+        <div class="categories">
+            <button class="category active">الكل</button>
+            <button class="category">حكم</button>
+            <button class="category">شعر</button>
+            <button class="category">حب</button>
+            <button class="category">نجاح</button>
+            <button class="category">حياة</button>
+        </div>
+        
+        <!-- قائمة الاقتباسات -->
+        <main class="main-content">
+            <div id="quotesList" class="quotes-list">
+                <!-- الاقتباسات تظهر هنا عبر JavaScript -->
+            </div>
+        </main>
+        
+        <!-- التذييل -->
+        <footer class="app-footer">
+            <a href="browse.html" class="footer-nav active">
+                <i class="fas fa-home"></i>
+                <span>الرئيسية</span>
+            </a>
+            <a href="#explore" class="footer-nav">
+                <i class="fas fa-search"></i>
+                <span>استكشاف</span>
+            </a>
+            <a href="post.html" class="footer-nav add-post">
+                <i class="fas fa-plus"></i>
+            </a>
+            <a href="#notifications" class="footer-nav">
+                <i class="fas fa-bell"></i>
+                <span>إشعارات</span>
+            </a>
+            <a href="profile.html" class="footer-nav">
+                <i class="fas fa-user"></i>
+                <span>حسابي</span>
+            </a>
+        </footer>
+    </div>
+    
+    <script src="app.js"></script>
+    <script src="db.js"></script>
+    <script>
+        // تحميل الاقتباسات عند فتح الصفحة
+        document.addEventListener('DOMContentLoaded', () => {
+            loadQuotes();
+            setupEventListeners();
+        });
+        
+        function loadQuotes() {
+            const quotes = getQuotes();
+            const quotesList = document.getElementById('quotesList');
+            
+            quotesList.innerHTML = '';
+            
+            quotes.forEach(quote => {
+                const quoteElement = createQuoteElement(quote);
+                quotesList.appendChild(quoteElement);
+            });
+        }
+        
+        function createQuoteElement(quote) {
+            const div = document.createElement('div');
+            div.className = 'quote-card';
+            
+            div.innerHTML = `
+                <div class="quote-header">
+                    <div class="user-info">
+                        <div class="avatar">
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+                        <div>
+                            <h4>${quote.author}</h4>
+                            <span class="time">${quote.time}</span>
+                        </div>
+                    </div>
+                    <button class="more-btn">
+                        <i class="fas fa-ellipsis-h"></i>
+                    </button>
+                </div>
+                
+                <div class="quote-content">
+                    <p>${quote.text}</p>
+                    ${quote.image ? `<img src="${quote.image}" alt="صورة الاقتباس" class="quote-image">` : ''}
+                </div>
+                
+                <div class="quote-footer">
+                    <button class="like-btn ${quote.liked ? 'liked' : ''}" data-id="${quote.id}">
+                        <i class="fas fa-heart"></i>
+                        <span>${quote.likes}</span>
+                    </button>
+                    <button class="comment-btn">
+                        <i class="fas fa-comment"></i>
+                        <span>${quote.comments}</span>
+                    </button>
+                    <button class="share-btn">
+                        <i class="fas fa-share"></i>
+                        <span>مشاركة</span>
+                    </button>
+                    <button class="bookmark-btn">
+                        <i class="fas fa-bookmark"></i>
+                    </button>
+                </div>
+            `;
+            
+            return div;
+        }
+        
+        function setupEventListeners() {
+            // البحث
+            document.getElementById('searchInput').addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                filterQuotes(searchTerm);
+            });
+            
+            // التبويبات
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const filter = this.dataset.filter;
+                    filterByType(filter);
+                });
+            });
+            
+            // الفئات
+            document.querySelectorAll('.category').forEach(category => {
+                category.addEventListener('click', function() {
+                    document.querySelectorAll('.category').forEach(c => c.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+        }
+        
+        function filterQuotes(searchTerm) {
+            // فلترة الاقتباسات حسب البحث
+        }
+        
+        function filterByType(type) {
+            // فلترة حسب النوع
+        }
+    </script>
+</body>
+</html>
